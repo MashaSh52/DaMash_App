@@ -34,6 +34,8 @@ struct DataWrapper{
     int count; //количество потомков
 };
 
+Q_DECLARE_METATYPE(DataWrapper*)
+
 class ImageProvider : public QAbstractItemModel
 {
     Q_OBJECT
@@ -41,7 +43,7 @@ public:
     ImageProvider(QString nameOfDB, QObject *parent = nullptr);
     ~ImageProvider();
 
-    //bool setData(const QModelIndex &index, QVariant &value, int role);
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 
     virtual QVariant data(const QModelIndex &index, int role) const;
@@ -53,6 +55,9 @@ public:
     void fetchMore(const QModelIndex &parent);
     bool canFetchMore(const QModelIndex &parent) const;
 
+    // === FOR INTERFACE ===
+    Q_INVOKABLE bool addNewTerm(QString nameOfTerm);
+
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};
@@ -62,6 +67,8 @@ private:
     const DataWrapper* dataForIndex(const QModelIndex &index) const;
     DataWrapper* dataForIndex(const QModelIndex &index);
     int getChildrenCount(element_type type, int pid) const;
+
+    bool createNewTerm(const QString nameOfTerm);
 
 
 

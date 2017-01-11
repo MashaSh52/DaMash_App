@@ -11,15 +11,16 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
+    ImageProvider model("/home/skt/appForLections/db");
 
-   // qmlRegisterType<ImageProvider>("com.mycompany.IProvider", 1, 0, "ImageProvider");
-    //auto tempObj = model.dw;
 
-    /*QApplication app(argc,argv);
+
+   /* QApplication app(argc,argv);
     QTreeView view;
     ImageProvider model("/home/skt/appForLections/db");
     view.setModel(&model);
     view.show();*/
+    model.addNewTerm("TEMP TERM");
 
 
     return app.exec();

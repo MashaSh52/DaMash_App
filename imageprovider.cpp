@@ -24,12 +24,34 @@ ImageProvider::~ImageProvider()
     database.close();
 }
 
+bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    //QObject *object = qvariant_cast<QObject*>(value);
+    //DataWrapper *dw = qobject_cast<DataWrapper*>(object);
+
+    if (!index.isValid() || role != Qt::EditRole)
+        return false;
+
+    //DataWrapper* dw = qvariant_cast<DataWrapper*>(value);
+
+    DataWrapper* dw = dataForIndex(index);
+
+    switch(dw->type){
+    case TERM:
+        createNewTerm(value.toString());
+    }
+
+    emit dataChanged(index, index);
+}
+
+
 QVariant ImageProvider::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
 
     const DataWrapper*ddd =  dataForIndex(index);
+
     if (role == Qt::DisplayRole)
     {
         if (ddd->type != IMAGE)
@@ -96,6 +118,30 @@ bool ImageProvider::canFetchMore(const QModelIndex &parent) const
 {
     const DataWrapper* data = dataForIndex(parent);
     return data->children.size() < data->count;
+}
+
+bool ImageProvider::addNewTerm(QString nameOfTerm)
+{
+    QModelIndex i = createIndex(0,0, &dw);
+
+    HData* insideData = new HData;
+    DataWrapper* newItem = new DataWrapper;
+
+    insideData->comments = "";
+    //insideData->tags = {};
+
+    newItem->data = insideData;
+    newItem->parent = &dw;
+    newItem->type = TERM;
+
+    dw.children.append(newItem);
+    dw.count++;
+
+    QModelIndex index = createIndex(this->rowCount(i),0,dw.children[this->rowCount(i)-1]);
+    this->setData(index, nameOfTerm, Qt::EditRole);
+
+
+
 }
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
@@ -198,4 +244,47 @@ int ImageProvider::getChildrenCount(element_type type, int pid) const
     return count;
 
 
+}
+
+bool ImageProvider::createNewTerm(QString nameOfTerm)
+{
+    // Working with database
+    QSqlQuery curIdAndNumber;
+
+    curIdAndNumber.prepare("SELECT MAX(NUMBER) AS NUM FROM RELATIONSHIPS WHERE TYPE = 1");
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 num = curIdAndNumber.value(0).toInt();
+
+    curIdAndNumber.prepare("SELECT MAX(ID) AS I FROM RELATIONSHIPS");
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 id = curIdAndNumber.value(0).toInt();
+
+
+    QSqlQuery queryToInsert;
+
+    queryToInsert.prepare("INSERT INTO RELATIONSHIPS VALUES(:ID,:PID,:NAME,:COMMENT,:TYPE,:NUMBER)");
+    queryToInsert.bindValue(":ID", id+1);
+    queryToInsert.bindValue(":PID", 0);
+    queryToInsert.bindValue(":NAME", nameOfTerm);
+    queryToInsert.bindValue(":COMMENT", "");
+    queryToInsert.bindValue(":TYPE", 1);
+    queryToInsert.bindValue(":NUMBER", num+1);
+
+    queryToInsert.exec();
+
+
+    //Working with tree of model
+    DataWrapper* newTerm = dw.children[dw.count - 1]; //сейчас у нас уже есть там созданный узел
+    newTerm->id = id+1;
+    HData* tempHD = (HData*)newTerm->data;
+    tempHD->name = nameOfTerm;
+    tempHD->comments = "";
+    newTerm->data= tempHD;
+    delete tempHD;
+    newTerm->count = 0;
+    newTerm->children.clear();
+    newTerm->number = num + 1;
+    return 0;
 }
