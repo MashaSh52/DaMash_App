@@ -36,7 +36,7 @@ struct DataWrapper{
     int count; //количество потомков
 };
 
-Q_DECLARE_METATYPE(DataWrapper*)
+Q_DECLARE_METATYPE(IData*)
 
 class ImageProvider : public QAbstractItemModel
 {
@@ -57,7 +57,7 @@ public:
     void fetchMore(const QModelIndex &parent);
     bool canFetchMore(const QModelIndex &parent) const;
     bool hasChildren(const QModelIndex &parent) const;
-    //int cf;
+    int cf;
 
     // === FOR INTERFACE ===
 
@@ -78,6 +78,18 @@ public:
      *
     */
     Q_INVOKABLE bool addNewCourse(qint16 termNumber, QString nameOfCourse);
+    /*
+     * addNewImage - функция добавления нового семестра
+     *
+     * args:
+     *  qint16 termNumber - номер семестра, в который добавляется фото,
+     *  qint16 courseNumber - номер курса,
+     *  QString path - путь к фото,
+     *  QString comments - комментарий,
+     *  QStringList tags - теги
+     *
+    */
+    Q_INVOKABLE bool addNewImage(qint16 termNumber, qint16 courseNumber, QString path, QString comments, QStringList tags);
 
 private:
     QSqlDatabase database;
@@ -91,6 +103,7 @@ private:
 
     bool createNewTerm(const QString nameOfTerm);
     bool createNewCourse(QModelIndex &parent, const QString nameOfCourse);
+    bool createNewImage(QModelIndex &parent, const QString path, const QString comment, const QStringList tags);
 
 
 

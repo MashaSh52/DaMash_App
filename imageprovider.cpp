@@ -38,11 +38,17 @@ bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int
         break;
     }
     case COURSE:
-        {
-            QModelIndex fatherTerm = this->parent(index);
-            createNewCourse(fatherTerm, value.toString());
-            break;
-        }
+    {
+        QModelIndex fatherTerm = this->parent(index);
+        createNewCourse(fatherTerm, value.toString());
+        break;
+    }
+    default:
+    {
+        IData* data = value.value<IData*>();
+        QModelIndex fatherCourse = this->parent(index);
+        createNewImage(fatherCourse, data->path, data->comments, data->tags);
+    }
     }
 
     DataWrapper* tempDW = dataForIndex(index);
@@ -130,7 +136,7 @@ bool ImageProvider::canFetchMore(const QModelIndex &parent) const
 
 bool ImageProvider::hasChildren(const QModelIndex &parent) const
 {
-    DataWrapper* d = dataForIndex(parent);
+    const DataWrapper* d = dataForIndex(parent);
     if (d->count != 0)
         return true;
     else
@@ -200,10 +206,43 @@ bool ImageProvider::addNewCourse(qint16 termNumber, QString nameOfCourse)
 
 }
 
+bool ImageProvider::addNewImage(qint16 termNumber, qint16 courseNumber, QString path, QString comments, QStringList tags)
+{
+    QModelIndex termIndex = this->index(termNumber,0,QModelIndex());
+    QModelIndex curIndex = this->index(courseNumber,0,termIndex);
+    if(!curIndex.isValid())
+        return 1;
+
+    DataWrapper* curCourse = dataForIndex(curIndex);
+    int t = this->rowCount(curIndex);
+    beginInsertRows(curIndex, t, t);
+
+    IData* insideData = new IData;
+    DataWrapper* newImage = new DataWrapper;
+
+    insideData->comments = comments;
+    insideData->tags = tags;
+    insideData->path = path;
+
+    QVariant toCreateImgPost = QVariant::fromValue(insideData);
+
+    newImage->data = insideData;
+    newImage->parent = curCourse;
+
+    curCourse->children.append(newImage);
+    curCourse->count++;
+
+    endInsertRows();
+
+    QModelIndex index = createIndex(t,0,curCourse->children[t]);
+    this->setData(index, toCreateImgPost, Qt::EditRole);
+
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
-    //cf = cf+1;
+    cf = cf+1;
     DataWrapper* data = dataForIndex(parent);
     data->children.clear();
     QSqlQuery query;
@@ -214,7 +253,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     }
     else
     {   // with images
-        query.prepare("SELECT * FROM images WHERE PID = :id ORDER BY NUMBER");
+        query.prepare("SELECT * FROM IMAGES WHERE PID = :id ORDER BY NUM_OF_IMG");
     }
 
     query.bindValue(":id", data->id);
@@ -225,7 +264,12 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
         auto id = query.value("id").toUInt(); //работать, скорее всего, не будет, потому что могут быть проблемы с версиями qt
         auto comment = query.value("comment").toString();
         QStringList tags = query.value("tags").toStringList();
-        auto number = query.value("number").toInt();
+        int number;
+        if (data->type != COURSE)
+            number = query.value("number").toInt();
+        else
+            number = query.value("num_of_img").toInt();
+
 
         switch (data->type){
         case ROOT:
@@ -256,8 +300,8 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     } //while
 
     data->count = data->children.size();
-//    if(cf == 2)
-//        this->addNewCourse(2, "Разработка корпоративных приложений");
+//    if(cf == 3)
+//        this->addNewImage(0, 1, "paaaath", "hahaha", {"one", "two"});
 
 }
 
@@ -356,6 +400,59 @@ bool ImageProvider::createNewCourse(QModelIndex &parent, const QString nameOfCou
     newCourse->number = num + 1;
     return 0;
 
+}
+
+bool ImageProvider::createNewImage(QModelIndex &parent, const QString path, const QString comment, const QStringList tags)
+{
+    if(!parent.isValid())
+        return 1;
+    DataWrapper* fatherCourse = dataForIndex(parent);
+
+    // Working with database
+    QSqlQuery curIdAndNumber;
+
+    curIdAndNumber.prepare("SELECT MAX(NUM_OF_IMG) AS NUM FROM IMAGES WHERE PID = :PID");
+    curIdAndNumber.bindValue(":PID",fatherCourse->id);
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 num = curIdAndNumber.value(0).toInt();
+
+    curIdAndNumber.prepare("SELECT MAX(ID) AS I FROM IMAGES");
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 id = curIdAndNumber.value(0).toInt();
+
+
+    QSqlQuery queryToInsert;
+
+    queryToInsert.prepare("INSERT INTO IMAGES VALUES(:ID, :PID, :NUM_OF_IMG,:PATH_TO_FILE,:COMMENT,:TAGS)");
+    queryToInsert.bindValue(":ID", id+1);
+    queryToInsert.bindValue(":PID", fatherCourse->id);
+    queryToInsert.bindValue(":NUM_OF_IMG", num+1);
+    queryToInsert.bindValue(":PATH_TO_FILE", path);
+    queryToInsert.bindValue(":COMMENT", comment);
+    queryToInsert.bindValue(":TAGS", tags.join(","));
+
+    queryToInsert.exec();
+
+
+    //Working with tree of model
+    DataWrapper* newImg = fatherCourse->children[fatherCourse->count - 1]; //сейчас у нас уже есть там созданный узел
+    newImg->id = id+1;
+
+    IData* tempID = new IData;
+    tempID = (IData*)newImg->data;
+    tempID->path = path;
+    tempID->comments = comment;
+    tempID->tags = tags;
+
+    newImg->data= tempID;
+    newImg->type = IMAGE;
+
+    newImg->count = 0;
+    newImg->children.clear();
+    newImg->number = num + 1;
+    return 0;
 }
 
 bool ImageProvider::createNewTerm(QString nameOfTerm)
