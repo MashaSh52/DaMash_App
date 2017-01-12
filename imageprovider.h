@@ -59,6 +59,7 @@ public:
     int cf;
 
     // === FOR INTERFACE ===
+
     /*
      * addNewTerm - функция добавления нового семестра
      *
@@ -67,7 +68,15 @@ public:
      *
     */
     Q_INVOKABLE bool addNewTerm(QString nameOfTerm);
-   // Q_INVOKABLE bool addNewCourse(qint16 termNumber, QString nameOfCourse);
+    /*
+     * addNewCourse - функция добавления нового семестра
+     *
+     * args:
+     *  qint16 termNumber - номер семестра, в который добавляется курс,
+     *  QString nameOfCourse - название нового курса
+     *
+    */
+    Q_INVOKABLE bool addNewCourse(qint16 termNumber, QString nameOfCourse);
 
 private:
     QSqlDatabase database;
@@ -80,7 +89,7 @@ private:
     int getChildrenCount(element_type type, int pid) const;
 
     bool createNewTerm(const QString nameOfTerm);
-   // bool createNewCourse(QModelIndex &parent, const QString nameOfCourse);
+    bool createNewCourse(QModelIndex &parent, const QString nameOfCourse);
 
 
 

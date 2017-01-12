@@ -37,12 +37,12 @@ bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int
         createNewTerm(value.toString());
         break;
     }
-//    case COURSE:
-//        {
-//            QModelIndex fatherTerm = this->parent(index);
-//            createNewCourse(fatherTerm, value.toString());
-//            break;
-//        }
+    case COURSE:
+        {
+            QModelIndex fatherTerm = this->parent(index);
+            createNewCourse(fatherTerm, value.toString());
+            break;
+        }
     }
 
     DataWrapper* tempDW = dataForIndex(index);
@@ -159,38 +159,37 @@ bool ImageProvider::addNewTerm(QString nameOfTerm)
 
 }
 
-//bool ImageProvider::addNewCourse(qint16 termNumber, QString nameOfCourse)
-//{
-//        //TODO: проверка на существование курса
+bool ImageProvider::addNewCourse(qint16 termNumber, QString nameOfCourse)
+{
+    //TODO: проверка на существование курса
 
-//        QModelIndex curIndex = this->index(termNumber,0,QModelIndex());
-//        this->data(curIndex, Qt::DisplayRole); //Это зачем?
-//        if(!curIndex.isValid())
-//            return 1;
+    QModelIndex curIndex = this->index(termNumber,0,QModelIndex());
+    if(!curIndex.isValid())
+        return 1;
 
-//        DataWrapper* curTerm = dataForIndex(curIndex);
-//        this->beginInsertRows(curIndex, this->rowCount(curIndex), this->rowCount(curIndex));
+    DataWrapper* curTerm = dataForIndex(curIndex);
+    int t = this->rowCount(curIndex);
+    beginInsertRows(curIndex, t, t);
 
-//        HData* insideData = new HData;
-//        DataWrapper* newCourse = new DataWrapper;
+    HData* insideData = new HData;
+    DataWrapper* newCourse = new DataWrapper;
 
-//        insideData->comments = "";
-//        //insideData->tags = {};
+    insideData->comments = "";
+    //insideData->tags = {};
 
-//        newCourse->data = insideData;
-//        newCourse->parent = curTerm;
-//        newCourse->type = COURSE;
+    newCourse->data = insideData;
+    newCourse->parent = curTerm;
+    newCourse->type = COURSE;
 
-//        curTerm->children.append(newCourse);
-//        curTerm->count++;
+    curTerm->children.append(newCourse);
+    curTerm->count++;
 
-//        this->endInsertRows();
+    endInsertRows();
 
-//        int t = this->rowCount(curIndex);
-//        QModelIndex index = createIndex(t,0,curTerm->children[t-1]);
-//        this->setData(index, nameOfCourse, Qt::EditRole);
+    QModelIndex index = createIndex(t,0,curTerm->children[t]);
+    this->setData(index, nameOfCourse, Qt::EditRole);
 
-//}
+}
 
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
@@ -249,7 +248,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
 
     data->count = data->children.size();
 //    if(cf == 2)
-//        this->addNewCourse(1, "temp cooourse");
+//        this->addNewCourse(2, "Разработка корпоративных приложений");
 
 }
 
@@ -298,56 +297,57 @@ int ImageProvider::getChildrenCount(element_type type, int pid) const
 
 }
 
-//bool ImageProvider::createNewCourse(QModelIndex &parent, const QString nameOfCourse)
-//{
-//    if(!parent.isValid())
-//        return 1;
-//    DataWrapper* fatherTerm = dataForIndex(parent);
+bool ImageProvider::createNewCourse(QModelIndex &parent, const QString nameOfCourse)
+{
+    if(!parent.isValid())
+        return 1;
+    DataWrapper* fatherTerm = dataForIndex(parent);
 
-//    // Working with database
-//    QSqlQuery curIdAndNumber;
+    // Working with database
+    QSqlQuery curIdAndNumber;
 
-//    curIdAndNumber.prepare("SELECT MAX(NUMBER) AS NUM FROM RELATIONSHIPS WHERE TYPE = 2 AND PID = :PID");
-//    curIdAndNumber.bindValue(":PID",fatherTerm->id);
-//    curIdAndNumber.exec();
-//    curIdAndNumber.next();
-//    qint32 num = curIdAndNumber.value(0).toInt();
+    curIdAndNumber.prepare("SELECT MAX(NUMBER) AS NUM FROM RELATIONSHIPS WHERE TYPE = 2 AND PID = :PID");
+    curIdAndNumber.bindValue(":PID",fatherTerm->id);
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 num = curIdAndNumber.value(0).toInt();
 
-//    curIdAndNumber.prepare("SELECT MAX(ID) AS I FROM RELATIONSHIPS");
-//    curIdAndNumber.exec();
-//    curIdAndNumber.next();
-//    qint32 id = curIdAndNumber.value(0).toInt();
-
-
-//    QSqlQuery queryToInsert;
-
-//    queryToInsert.prepare("INSERT INTO RELATIONSHIPS VALUES(:ID,:PID,:NAME,:COMMENT,:TYPE,:NUMBER)");
-//    queryToInsert.bindValue(":ID", id+1);
-//    queryToInsert.bindValue(":PID", fatherTerm->id);
-//    queryToInsert.bindValue(":NAME", nameOfCourse);
-//    queryToInsert.bindValue(":COMMENT", "");
-//    queryToInsert.bindValue(":TYPE", 2);
-//    queryToInsert.bindValue(":NUMBER", num+1);
-
-//    queryToInsert.exec();
+    curIdAndNumber.prepare("SELECT MAX(ID) AS I FROM RELATIONSHIPS");
+    curIdAndNumber.exec();
+    curIdAndNumber.next();
+    qint32 id = curIdAndNumber.value(0).toInt();
 
 
-//    //Working with tree of model
-//    DataWrapper* newCourse = fatherTerm->children[fatherTerm->count - 1]; //сейчас у нас уже есть там созданный узел
-//    newCourse->id = id+1;
+    QSqlQuery queryToInsert;
 
-//    HData* tempHD = (HData*)newCourse->data;
-//    tempHD->name = nameOfCourse;
-//    tempHD->comments = "";
-//    newCourse->data= tempHD;
-//    delete tempHD;
+    queryToInsert.prepare("INSERT INTO RELATIONSHIPS VALUES(:ID,:PID,:NAME,:COMMENT,:TYPE,:NUMBER)");
+    queryToInsert.bindValue(":ID", id+1);
+    queryToInsert.bindValue(":PID", fatherTerm->id);
+    queryToInsert.bindValue(":NAME", nameOfCourse);
+    queryToInsert.bindValue(":COMMENT", "");
+    queryToInsert.bindValue(":TYPE", 2);
+    queryToInsert.bindValue(":NUMBER", num+1);
 
-//    newCourse->count = 0;
-//    newCourse->children.clear();
-//    newCourse->number = num + 1;
-//    return 0;
+    queryToInsert.exec();
 
-//}
+
+    //Working with tree of model
+    DataWrapper* newCourse = fatherTerm->children[fatherTerm->count - 1]; //сейчас у нас уже есть там созданный узел
+    newCourse->id = id+1;
+
+    HData* tempHD = new HData;
+    tempHD = (HData*)newCourse->data;
+    tempHD->name = nameOfCourse;
+    tempHD->comments = "";
+    newCourse->data= tempHD;
+
+
+    newCourse->count = 0;
+    newCourse->children.clear();
+    newCourse->number = num + 1;
+    return 0;
+
+}
 
 bool ImageProvider::createNewTerm(QString nameOfTerm)
 {
