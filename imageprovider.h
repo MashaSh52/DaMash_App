@@ -56,7 +56,8 @@ public:
 
     void fetchMore(const QModelIndex &parent);
     bool canFetchMore(const QModelIndex &parent) const;
-    int cf;
+    bool hasChildren(const QModelIndex &parent) const;
+    //int cf;
 
     // === FOR INTERFACE ===
 
