@@ -9,6 +9,8 @@
 
 enum element_type {ROOT, TERM = 1, COURSE, IMAGE};
 
+
+
 //RELATIONSHIPS: id, pid, name, comment, type, number
 //IMAGES:id,pid,numOfImg,nameOfFile,Comment,tags
 
@@ -54,9 +56,18 @@ public:
 
     void fetchMore(const QModelIndex &parent);
     bool canFetchMore(const QModelIndex &parent) const;
+    int cf;
 
     // === FOR INTERFACE ===
+    /*
+     * addNewTerm - функция добавления нового семестра
+     *
+     * args:
+     *  QString nameOfTerm - название нового семестра
+     *
+    */
     Q_INVOKABLE bool addNewTerm(QString nameOfTerm);
+   // Q_INVOKABLE bool addNewCourse(qint16 termNumber, QString nameOfCourse);
 
 private:
     QSqlDatabase database;
@@ -69,6 +80,7 @@ private:
     int getChildrenCount(element_type type, int pid) const;
 
     bool createNewTerm(const QString nameOfTerm);
+   // bool createNewCourse(QModelIndex &parent, const QString nameOfCourse);
 
 
 

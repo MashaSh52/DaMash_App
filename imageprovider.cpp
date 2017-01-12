@@ -7,6 +7,7 @@
 
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
+    cf=0;
     //Лезем в БД и подгружаем все данные
     database = QSqlDatabase::addDatabase("QSQLITE");
     database.setDatabaseName(nameOfDB);
@@ -26,22 +27,27 @@ ImageProvider::~ImageProvider()
 
 bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    //QObject *object = qvariant_cast<QObject*>(value);
-    //DataWrapper *dw = qobject_cast<DataWrapper*>(object);
-
     if (!index.isValid() || role != Qt::EditRole)
         return false;
-
-    //DataWrapper* dw = qvariant_cast<DataWrapper*>(value);
 
     DataWrapper* dw = dataForIndex(index);
 
     switch(dw->type){
-    case TERM:
+    case TERM:{
         createNewTerm(value.toString());
+        break;
+    }
+//    case COURSE:
+//        {
+//            QModelIndex fatherTerm = this->parent(index);
+//            createNewCourse(fatherTerm, value.toString());
+//            break;
+//        }
     }
 
+    DataWrapper* tempDW = dataForIndex(index);
     emit dataChanged(index, index);
+    return true;
 }
 
 
@@ -56,8 +62,8 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
     {
         if (ddd->type != IMAGE)
         {
-            HData* temp = (HData* )ddd->data;
-            return temp->name;
+           HData* temp = (HData* )ddd->data;
+           return temp->name;
         }
     }
 
@@ -73,6 +79,8 @@ int ImageProvider::columnCount(const QModelIndex &parent) const
 
 int ImageProvider::rowCount(const QModelIndex &parent) const
 {
+    if (!parent.isValid())
+        return dw.count;
     const DataWrapper* parent_pointer = dataForIndex(parent);
     return parent_pointer->count;
 }
@@ -122,7 +130,13 @@ bool ImageProvider::canFetchMore(const QModelIndex &parent) const
 
 bool ImageProvider::addNewTerm(QString nameOfTerm)
 {
+    //TODO: проверка на существование семестра
+
+    if(!this->index(0,0,QModelIndex()).isValid())
+        return 1;
     QModelIndex i = createIndex(0,0, &dw);
+    qint16 t = this->rowCount(i);
+    beginInsertRows(QModelIndex(), t, t);
 
     HData* insideData = new HData;
     DataWrapper* newItem = new DataWrapper;
@@ -137,15 +151,51 @@ bool ImageProvider::addNewTerm(QString nameOfTerm)
     dw.children.append(newItem);
     dw.count++;
 
-    QModelIndex index = createIndex(this->rowCount(i),0,dw.children[this->rowCount(i)-1]);
+    endInsertRows();
+
+    QModelIndex index = createIndex(t,0,dw.children[t]);
+    DataWrapper* dddd = dataForIndex(index);
     this->setData(index, nameOfTerm, Qt::EditRole);
-
-
 
 }
 
+//bool ImageProvider::addNewCourse(qint16 termNumber, QString nameOfCourse)
+//{
+//        //TODO: проверка на существование курса
+
+//        QModelIndex curIndex = this->index(termNumber,0,QModelIndex());
+//        this->data(curIndex, Qt::DisplayRole); //Это зачем?
+//        if(!curIndex.isValid())
+//            return 1;
+
+//        DataWrapper* curTerm = dataForIndex(curIndex);
+//        this->beginInsertRows(curIndex, this->rowCount(curIndex), this->rowCount(curIndex));
+
+//        HData* insideData = new HData;
+//        DataWrapper* newCourse = new DataWrapper;
+
+//        insideData->comments = "";
+//        //insideData->tags = {};
+
+//        newCourse->data = insideData;
+//        newCourse->parent = curTerm;
+//        newCourse->type = COURSE;
+
+//        curTerm->children.append(newCourse);
+//        curTerm->count++;
+
+//        this->endInsertRows();
+
+//        int t = this->rowCount(curIndex);
+//        QModelIndex index = createIndex(t,0,curTerm->children[t-1]);
+//        this->setData(index, nameOfCourse, Qt::EditRole);
+
+//}
+
+
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
+    cf = cf+1;
     DataWrapper* data = dataForIndex(parent);
     data->children.clear();
     QSqlQuery query;
@@ -198,6 +248,8 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     } //while
 
     data->count = data->children.size();
+//    if(cf == 2)
+//        this->addNewCourse(1, "temp cooourse");
 
 }
 
@@ -246,6 +298,57 @@ int ImageProvider::getChildrenCount(element_type type, int pid) const
 
 }
 
+//bool ImageProvider::createNewCourse(QModelIndex &parent, const QString nameOfCourse)
+//{
+//    if(!parent.isValid())
+//        return 1;
+//    DataWrapper* fatherTerm = dataForIndex(parent);
+
+//    // Working with database
+//    QSqlQuery curIdAndNumber;
+
+//    curIdAndNumber.prepare("SELECT MAX(NUMBER) AS NUM FROM RELATIONSHIPS WHERE TYPE = 2 AND PID = :PID");
+//    curIdAndNumber.bindValue(":PID",fatherTerm->id);
+//    curIdAndNumber.exec();
+//    curIdAndNumber.next();
+//    qint32 num = curIdAndNumber.value(0).toInt();
+
+//    curIdAndNumber.prepare("SELECT MAX(ID) AS I FROM RELATIONSHIPS");
+//    curIdAndNumber.exec();
+//    curIdAndNumber.next();
+//    qint32 id = curIdAndNumber.value(0).toInt();
+
+
+//    QSqlQuery queryToInsert;
+
+//    queryToInsert.prepare("INSERT INTO RELATIONSHIPS VALUES(:ID,:PID,:NAME,:COMMENT,:TYPE,:NUMBER)");
+//    queryToInsert.bindValue(":ID", id+1);
+//    queryToInsert.bindValue(":PID", fatherTerm->id);
+//    queryToInsert.bindValue(":NAME", nameOfCourse);
+//    queryToInsert.bindValue(":COMMENT", "");
+//    queryToInsert.bindValue(":TYPE", 2);
+//    queryToInsert.bindValue(":NUMBER", num+1);
+
+//    queryToInsert.exec();
+
+
+//    //Working with tree of model
+//    DataWrapper* newCourse = fatherTerm->children[fatherTerm->count - 1]; //сейчас у нас уже есть там созданный узел
+//    newCourse->id = id+1;
+
+//    HData* tempHD = (HData*)newCourse->data;
+//    tempHD->name = nameOfCourse;
+//    tempHD->comments = "";
+//    newCourse->data= tempHD;
+//    delete tempHD;
+
+//    newCourse->count = 0;
+//    newCourse->children.clear();
+//    newCourse->number = num + 1;
+//    return 0;
+
+//}
+
 bool ImageProvider::createNewTerm(QString nameOfTerm)
 {
     // Working with database
@@ -278,11 +381,12 @@ bool ImageProvider::createNewTerm(QString nameOfTerm)
     //Working with tree of model
     DataWrapper* newTerm = dw.children[dw.count - 1]; //сейчас у нас уже есть там созданный узел
     newTerm->id = id+1;
-    HData* tempHD = (HData*)newTerm->data;
+    HData* tempHD = new HData;
+    tempHD = (HData*)newTerm->data;
     tempHD->name = nameOfTerm;
     tempHD->comments = "";
     newTerm->data= tempHD;
-    delete tempHD;
+
     newTerm->count = 0;
     newTerm->children.clear();
     newTerm->number = num + 1;

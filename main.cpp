@@ -15,12 +15,17 @@ int main(int argc, char *argv[])
 
 
 
-   /* QApplication app(argc,argv);
-    QTreeView view;
-    ImageProvider model("/home/skt/appForLections/db");
-    view.setModel(&model);
-    view.show();*/
-    model.addNewTerm("TEMP TERM");
+//    QApplication app(argc,argv);
+//    QTreeView view;
+//    ImageProvider model("/home/skt/appForLections/db");
+//    view.setModel(&model);
+
+//    view.show();
+
+    model.addNewTerm("Спецкурс ЗИ");
+    model.addNewTerm("Спецкурс АДМ");
+
+    //model.addNewCourse(1, "newcourse");
 
 
     return app.exec();
