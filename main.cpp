@@ -13,6 +13,8 @@ int main(int argc, char *argv[])
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     ImageProvider model("/home/skt/appForLections/db");
 
+    engine.rootContext()->setContextProperty("mymodel", &model);
+    engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
 
 //    QApplication app(argc,argv);
@@ -22,11 +24,10 @@ int main(int argc, char *argv[])
 
 //    view.show();
 
-    model.addNewTerm("Спецкурс ЗИ");
-    model.addNewTerm("Спецкурс АДМ");
-
-    //model.addNewCourse(1, "newcourse");
+//    model.addNewTerm("Спецкурс ЗИ");
+//    model.addNewTerm("Спецкурс АДМ");
 
 
     return app.exec();
 }
+
