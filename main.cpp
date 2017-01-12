@@ -1,8 +1,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include "imageprovider.h"
+#include <QQmlContext>
 //#include <QApplication>
 //#include <QTreeView>
+
 
 int main(int argc, char *argv[])
 {
@@ -10,8 +12,9 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-    ImageProvider model("/home/skt/appForLections/db");
 
+    ImageProvider model("/home/skt/appForLections/db");
+ //   ImageProvider model("/home/skt/appForLections/DaMash_App/db");
     engine.rootContext()->setContextProperty("mymodel", &model);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
@@ -28,6 +31,9 @@ int main(int argc, char *argv[])
 
     //model.deleteTerm(4);
 
+
+
     return app.exec();
 }
+
 
