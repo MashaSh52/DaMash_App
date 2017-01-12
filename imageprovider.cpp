@@ -128,6 +128,15 @@ bool ImageProvider::canFetchMore(const QModelIndex &parent) const
     return data->children.size() < data->count;
 }
 
+bool ImageProvider::hasChildren(const QModelIndex &parent) const
+{
+    DataWrapper* d = dataForIndex(parent);
+    if (d->count != 0)
+        return true;
+    else
+        return false;
+}
+
 bool ImageProvider::addNewTerm(QString nameOfTerm)
 {
     //TODO: проверка на существование семестра
@@ -194,7 +203,7 @@ bool ImageProvider::addNewCourse(qint16 termNumber, QString nameOfCourse)
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
-    cf = cf+1;
+    //cf = cf+1;
     DataWrapper* data = dataForIndex(parent);
     data->children.clear();
     QSqlQuery query;
