@@ -5,14 +5,15 @@
 #include <QSqlDatabase>
 #include <QStringList>
 
-// index(), parent(), rowCount(), columnCount(), and data().
-
 enum element_type {ROOT, TERM = 1, COURSE, IMAGE};
 
-
-
-//RELATIONSHIPS: id, pid, name, comment, type, number
-//IMAGES:id,pid,numOfImg,nameOfFile,Comment,tags
+/*
+ * СТРУКТУРА БД:
+ *      ТАБЛИЦА RELATIONSHIPS:
+ *          ID, PID, NAME, COMMENT, TYPE, NUMBER
+ *      ТАБЛИЦА IMAGES:
+ *          ID, PID, NUM_OF_IMG, PATH_TO_FILE, COMMENT, TAGS
+ * */
 
 struct IData{//таблица IMAGES
     QString path;
@@ -33,7 +34,7 @@ struct DataWrapper{
     int number;
     DataWrapper* parent;
     QList<DataWrapper*> children;
-    int count; //количество потомков
+    int count;
 };
 
 Q_DECLARE_METATYPE(IData*)
@@ -73,28 +74,36 @@ public:
      * addNewCourse - функция добавления нового семестра
      *
      * args:
-     *  qint16 termNumber - номер семестра, в который добавляется курс,
+     *  QModelIndex currentIndex - индекс узла, на котором произошел клик (TERM),
      *  QString nameOfCourse - название нового курса
      *
     */
-    Q_INVOKABLE bool addNewCourse(qint16 termNumber, QString nameOfCourse);
+    Q_INVOKABLE bool addNewCourse(QModelIndex currentIndex, QString nameOfCourse);
     /*
      * addNewImage - функция добавления нового семестра
      *
      * args:
-     *  qint16 termNumber - номер семестра, в который добавляется фото,
-     *  qint16 courseNumber - номер курса,
+     *  QModelIndex currentIndex - индекс узла, на котором произошел клик (COURSE)
      *  QString path - путь к фото,
      *  QString comments - комментарий,
      *  QStringList tags - теги
      *
     */
-    Q_INVOKABLE bool addNewImage(qint16 termNumber, qint16 courseNumber, QString path, QString comments, QStringList tags);
+    Q_INVOKABLE bool addNewImage(QModelIndex currentIndex, QString path, QString comments, QStringList tags);
 
-    Q_INVOKABLE bool deleteTerm(qint16 termNumber);
-    Q_INVOKABLE bool deleteCourse(qint16 termNumber, qint16 courseNumber);
-    Q_INVOKABLE bool deleteImage(qint16 termNumber, qint16 courseNumber, qint16 imgNumber);
+   /*
+    * bool deleteElement - удаляет выбранный по индексу семестр/курс/фотографию
+    * QModelIndex currentIndex - индекс элемента, который следует удалить
+    *
+    **/
+    Q_INVOKABLE bool deleteElement(QModelIndex currentIndex);
 
+    /*
+     * getChildrenIndexesOfItem - возвращает список индексов всех потомков элемента
+     *
+     * QModelIndex currentIndex - индекс элемента, чьих потомков мы хотим получить
+     *
+     **/
     Q_INVOKABLE QVariantList getChildrenIndexesOfItem(QModelIndex currentIndex);
 
 private:
