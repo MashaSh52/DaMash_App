@@ -95,7 +95,7 @@ public:
     Q_INVOKABLE bool deleteCourse(qint16 termNumber, qint16 courseNumber);
     Q_INVOKABLE bool deleteImage(qint16 termNumber, qint16 courseNumber, qint16 imgNumber);
 
-    Q_INVOKABLE QVariantList getChildrenIndexesOfTerm(qint16 termNumber);
+    Q_INVOKABLE QVariantList getChildrenIndexesOfItem(QModelIndex currentIndex);
 
 private:
     QSqlDatabase database;

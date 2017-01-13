@@ -5,6 +5,7 @@
 #include <QSqlError>
 #include <QPixmap>
 #include <QUrl>
+#include <imageprocessing.h>
 
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
@@ -334,26 +335,34 @@ bool ImageProvider::deleteImage(qint16 termNumber, qint16 courseNumber, qint16 i
 
 }
 
-QVariantList ImageProvider::getChildrenIndexesOfTerm(qint16 termNumber)
+QVariantList ImageProvider::getChildrenIndexesOfItem(QModelIndex currentIndex)
 {
-    QModelIndex curIndex = this->index(termNumber,0,QModelIndex());
-    if(!curIndex.isValid())
+    if(!currentIndex.isValid())
         return QVariantList();
-
-    DataWrapper* curTerm = dataForIndex(curIndex);
     QVariantList res;
+    res.push_back(currentIndex);
 
     QModelIndex ind;
-    DataWrapper* currentSon;
-
-    for(int i = 0; i < curTerm->children.length(); ++i)
+    DataWrapper* currentItem = dataForIndex(currentIndex);
+    if(currentItem->count > 0)
     {
-        currentSon = curTerm->children[i];
-        ind = index(i,0,curIndex);
-        DataWrapper* check = dataForIndex(ind);
-        res.push_back(ind);
-    }
+        for(int i = 0; i < currentItem->children.size(); ++i)
+        {
+            DataWrapper* firstFloor = currentItem->children[i];
+            QModelIndex firstIndex = index(i,0,currentIndex);
+            res.push_back(firstIndex);
 
+            if(firstFloor->count > 0)
+            {
+                for(int j = 0; j < firstFloor->children.size(); ++j)
+                {
+                    DataWrapper* secondFloor = firstFloor->children[j];
+                    QModelIndex secondIndex = index(j, 0, firstIndex);
+                    res.push_back(secondIndex);
+                }
+            }
+        }
+    }
     return res;
 }
 
