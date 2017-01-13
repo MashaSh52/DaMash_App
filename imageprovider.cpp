@@ -74,14 +74,14 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
         else return ddd->number;
     }
 
-/*    if (role == Qt::DecorationRole && ddd->type == IMAGE)
+    /*if (role == Qt::DecorationRole && ddd->type == IMAGE)
     {
         IData* temp = (IData* )ddd->data;
         return temp->path;
        // return ddd->number;
-    }*/
+    }
 
-    return QVariant();
+    return QVariant();*/
 }
 
 int ImageProvider::columnCount(const QModelIndex &parent) const
@@ -403,7 +403,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
             break;
         }
         case COURSE: {
-            auto path = query.value("path").toString();
+            auto path = query.value("path_to_file").toString();
             data->children.append(
                         new DataWrapper{id, IMAGE,
                                         new IData{path,comment,tags},
@@ -421,8 +421,8 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     data->count = data->children.size();
 
     endInsertRows();
-    if(cf == 2)
-        this->getChildrenIndexesOfTerm(0);
+//    if(cf == 2)
+//        this->getChildrenIndexesOfTerm(0);
 
 }
 
