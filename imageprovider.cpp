@@ -64,14 +64,22 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
 
     const DataWrapper*ddd =  dataForIndex(index);
 
-    if (role == Qt::DisplayRole)
+    if (role == Qt::DisplayRole) // text view
     {
         if (ddd->type != IMAGE)
         {
            HData* temp = (HData* )ddd->data;
            return temp->name;
         }
+        else return ddd->number;
     }
+
+/*    if (role == Qt::DecorationRole && ddd->type == IMAGE)
+    {
+        IData* temp = (IData* )ddd->data;
+        return temp->path;
+       // return ddd->number;
+    }*/
 
     return QVariant();
 }
@@ -326,6 +334,29 @@ bool ImageProvider::deleteImage(qint16 termNumber, qint16 courseNumber, qint16 i
 
 }
 
+QVariantList ImageProvider::getChildrenIndexesOfTerm(qint16 termNumber)
+{
+    QModelIndex curIndex = this->index(termNumber,0,QModelIndex());
+    if(!curIndex.isValid())
+        return QVariantList();
+
+    DataWrapper* curTerm = dataForIndex(curIndex);
+    QVariantList res;
+
+    QModelIndex ind;
+    DataWrapper* currentSon;
+
+    for(int i = 0; i < curTerm->children.length(); ++i)
+    {
+        currentSon = curTerm->children[i];
+        ind = index(i,0,curIndex);
+        DataWrapper* check = dataForIndex(ind);
+        res.push_back(ind);
+    }
+
+    return res;
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
@@ -390,8 +421,8 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     data->count = data->children.size();
 
     endInsertRows();
-//    if(cf == 3)
-//        this->addNewImage(0, 1, "paaaath", "hahaha", {"one", "two"});
+    if(cf == 2)
+        this->getChildrenIndexesOfTerm(0);
 
 }
 
