@@ -1,12 +1,13 @@
 import QtQuick 2.5
-import QtQuick.Controls 1.4
+//import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Particles 2.0
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
-
+import QtQuick.Window 2.2
+import QtQuick.Controls 2.1
 
 
 
@@ -38,10 +39,10 @@ ApplicationWindow {
 
         Menu {
             title: qsTr("File")
-            style: MenuStyle {
+          /*  style: MenuStyle {
                 frame:  Rectangle {color: "#000000"}
                 itemDelegate.background : Rectangle {color: "#C0C0C0"}
-            }
+            }*/
 
 
             MenuItem {
@@ -56,16 +57,19 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("Add..")
-            style: MenuStyle {
+            /*style: MenuStyle {
                 frame:  Rectangle {color: "#000000"}
                 itemDelegate.background : Rectangle {color: "#C0C0C0"}
-            }
+            }*/
 
 
             MenuItem {
-                text: qsTr("&Add the semester")
-                onTriggered: messageDialog.show(qsTr("Button 1 pressed"))
+                text: qsTr("&Add new Term")
+                onTriggered: popup.open()
             }
+
+
+
             MenuItem {
                 text: qsTr("&Add the subject")
                 onTriggered: messageDialog.show(qsTr("Button 2 pressed"))
@@ -76,6 +80,17 @@ ApplicationWindow {
             }
         }
 
+    }
+
+    Popup {
+        id: popup
+        x: 100
+        y: 100
+        width: 200
+        height: 300
+        modal: true
+        focus: true
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     }
 
     MessageDialog {
@@ -119,9 +134,20 @@ ApplicationWindow {
 
                            }
                            else
-                           {
-                               parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
+                           {// parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
+                               if (parent.isExpanded(index_1)) // razvernut
+                               // nado svernuti vseh
+                               {
 
+                                   var children = getChildrenIndexesOfItem(index_1);
+                                   for (var i = 0; i < children.length; i++)
+                                   {
+
+                                        if (parent.isExpanded(i)) {parent.collapse(i)}
+                                   }
+                                   parent.collapse(index_1)
+                               }
+                               else { parent.expand(index_1); } // razvorachivaem tolko ego
                            }
 
                        }
@@ -139,16 +165,12 @@ ApplicationWindow {
      }
 
 
-
-
     TableViewColumn{
     role: "display"
     width:500 //появляется прокрутка
         }
 }
 }
-
-
 
 
 
