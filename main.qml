@@ -1,13 +1,12 @@
 import QtQuick 2.5
-//import QtQuick.Controls 1.4
+import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Particles 2.0
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
-import QtQuick.Window 2.2
-import QtQuick.Controls 2.1
+
 
 
 
@@ -39,10 +38,10 @@ ApplicationWindow {
 
         Menu {
             title: qsTr("File")
-          /*  style: MenuStyle {
+            style: MenuStyle {
                 frame:  Rectangle {color: "#000000"}
                 itemDelegate.background : Rectangle {color: "#C0C0C0"}
-            }*/
+            }
 
 
             MenuItem {
@@ -57,10 +56,10 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("Add..")
-            /*style: MenuStyle {
+            style: MenuStyle {
                 frame:  Rectangle {color: "#000000"}
                 itemDelegate.background : Rectangle {color: "#C0C0C0"}
-            }*/
+            }
 
 
             MenuItem {
@@ -82,7 +81,7 @@ ApplicationWindow {
 
     }
 
-    Popup {
+   /* Popup {
         id: popup
         x: 100
         y: 100
@@ -92,7 +91,7 @@ ApplicationWindow {
         focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
     }
-
+*/
     MessageDialog {
         id: messageDialog
         title: qsTr("May I have your attention, please?")
