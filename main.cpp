@@ -26,6 +26,7 @@ int main(int argc, char *argv[])
 //    model.addNewTerm("Спецкурс ЗИ");
 //    model.addNewTerm("Спецкурс АДМ");
 
+    //model.deleteTerm(4);
 
     return app.exec();
 }

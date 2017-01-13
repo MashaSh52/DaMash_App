@@ -88,7 +88,7 @@ int ImageProvider::rowCount(const QModelIndex &parent) const
     if (!parent.isValid())
         return dw.count;
     const DataWrapper* parent_pointer = dataForIndex(parent);
-    return parent_pointer->count;
+    return parent_pointer->children.size();
 }
 
 QModelIndex ImageProvider::index(int row, int column, const QModelIndex &parent) const
@@ -239,6 +239,93 @@ bool ImageProvider::addNewImage(qint16 termNumber, qint16 courseNumber, QString 
 
 }
 
+bool ImageProvider::deleteTerm(qint16 termNumber)
+{
+    QModelIndex rootIndex = QModelIndex();
+    DataWrapper *root = dataForIndex(rootIndex);
+
+    QModelIndex deletedTerm = this->index(termNumber,0,rootIndex);
+    this->fetchMore(deletedTerm);
+    DataWrapper * term = dataForIndex(deletedTerm);
+
+
+    while(term->count != 0)
+        deleteCourse(termNumber, term->count-1);
+
+
+    beginRemoveRows(rootIndex, termNumber, termNumber);
+    root->children.removeAt(termNumber);
+    root->count--;
+    endRemoveRows();
+
+    QSqlQuery queryForDelete;
+    queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
+    queryForDelete.bindValue(":ID", term->id);
+    queryForDelete.exec();
+
+    return true;
+
+
+}
+
+bool ImageProvider::deleteCourse(qint16 termNumber, qint16 courseNumber)
+{
+    QModelIndex termIndex = this->index(termNumber,0,QModelIndex());
+    QModelIndex deletedCourse = this->index(courseNumber, 0, termIndex);
+    if(!termIndex.isValid())
+        return 0;
+
+    DataWrapper *term = dataForIndex(termIndex);
+    this->fetchMore(deletedCourse);
+    DataWrapper *course= dataForIndex(deletedCourse);
+
+    while(course->count != 0)
+        deleteImage(termNumber,courseNumber,course->count-1);
+
+
+    beginRemoveRows(termIndex, courseNumber, courseNumber);
+    term->children.removeAt(courseNumber);
+    term->count--;
+    endRemoveRows();
+
+    QSqlQuery queryForDelete;
+    queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
+    queryForDelete.bindValue(":ID", course->id);
+    queryForDelete.exec();
+
+    return true;
+
+}
+
+bool ImageProvider::deleteImage(qint16 termNumber, qint16 courseNumber, qint16 imgNumber)
+{
+    QModelIndex termIndex = this->index(termNumber,0,QModelIndex());
+    QModelIndex courseIndex = this->index(courseNumber,0,termIndex);
+    QModelIndex imgIndex = this->index(imgNumber, 0, courseIndex);
+
+    if(!imgIndex.isValid())
+        return 1;
+
+    DataWrapper *term = dataForIndex(termIndex);
+    DataWrapper *course = dataForIndex(courseIndex);
+    DataWrapper *img = dataForIndex(imgIndex);
+
+
+
+    beginRemoveRows(courseIndex, imgNumber, imgNumber);
+    course->children.removeAt(imgNumber);
+    course->count--;
+    endRemoveRows();
+
+    QSqlQuery queryForDelete;
+    queryForDelete.prepare("DELETE FROM IMAGES WHERE ID = :ID");
+    queryForDelete.bindValue(":ID", img->id);
+    queryForDelete.exec();
+
+    return true;
+
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
@@ -259,6 +346,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     query.bindValue(":id", data->id);
     query.exec();
 
+    beginInsertRows(parent,0,data->count-1);
     while(query.next())
     {
         auto id = query.value("id").toUInt(); //работать, скорее всего, не будет, потому что могут быть проблемы с версиями qt
@@ -300,6 +388,8 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     } //while
 
     data->count = data->children.size();
+
+    endInsertRows();
 //    if(cf == 3)
 //        this->addNewImage(0, 1, "paaaath", "hahaha", {"one", "two"});
 

@@ -91,6 +91,10 @@ public:
     */
     Q_INVOKABLE bool addNewImage(qint16 termNumber, qint16 courseNumber, QString path, QString comments, QStringList tags);
 
+    Q_INVOKABLE bool deleteTerm(qint16 termNumber);
+    Q_INVOKABLE bool deleteCourse(qint16 termNumber, qint16 courseNumber);
+    Q_INVOKABLE bool deleteImage(qint16 termNumber, qint16 courseNumber, qint16 imgNumber);
+
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};
