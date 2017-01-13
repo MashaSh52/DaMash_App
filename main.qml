@@ -5,26 +5,43 @@ import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Particles 2.0
 import QtQml.Models 2.2
+import QtQuick.Dialogs 1.2
 
 
 
 
 ApplicationWindow {
     id: root
-    width: 940
+    width: 760
     height: 600
     visible: true
-    color: "#F5FFFA"
+    color: "#F5F5F5"
+
     title: qsTr("LECTIONS")
 
     menuBar: MenuBar {
 
         style: MenuBarStyle {
-            background: Rectangle {color: "#008080"}
+
+             background: Component {
+                Rectangle {
+                    gradient: Gradient {
+                        GradientStop { position: 0.0; color: "#696969" }
+                        GradientStop { position: 1.0; color: "#C0C0C0" }
+                }
+                }
+
+            }
         }
+
+
 
         Menu {
             title: qsTr("File")
+            style: MenuStyle {
+                frame:  Rectangle {color: "#000000"}
+                itemDelegate.background : Rectangle {color: "#C0C0C0"}
+            }
 
 
             MenuItem {
@@ -39,54 +56,53 @@ ApplicationWindow {
         }
         Menu {
             title: qsTr("Add..")
+            style: MenuStyle {
+                frame:  Rectangle {color: "#000000"}
+                itemDelegate.background : Rectangle {color: "#C0C0C0"}
+            }
 
 
             MenuItem {
                 text: qsTr("&Add the semester")
-                onTriggered: console.log("Open action triggered");
+                onTriggered: messageDialog.show(qsTr("Button 1 pressed"))
             }
             MenuItem {
                 text: qsTr("&Add the subject")
-                onTriggered: console.log("Open action triggered");
+                onTriggered: messageDialog.show(qsTr("Button 2 pressed"))
             }
             MenuItem {
                 text: qsTr("&Add the lection page")
-                onTriggered: console.log("Open action triggered");
+                onTriggered: messageDialog.show(qsTr("Button 3 pressed"))
             }
         }
 
     }
 
+    MessageDialog {
+        id: messageDialog
+        title: qsTr("May I have your attention, please?")
+
+        function show(caption) {
+            messageDialog.text = caption;
+            messageDialog.open();
+        }
+    }
+
     TreeView {
     id: treeView
-    alternatingRowColors : false
     //backgroundVisible : false
     x: 3
     y: 3
-
-
-    width: parent.width/3.4 //ширина
+    headerVisible : false
+    width: parent.width/3 //ширина
     height: parent.height - 6
     model: mymodel
 
     style: TreeViewStyle {
-              alternateBackgroundColor : "#BDB76B" // vipadaet
-              backgroundColor : "#556B2F" // osnovnoi
-              textColor: "#7CFC00"
-              highlightedTextColor : "#FF6347"
-              headerDelegate: Component {
-                  Rectangle {
-                    border.color: "black"
-                    border.width: 1
-                    width: parent.width
-                    height: 30
-                    gradient: Gradient {
-                            GradientStop { position: 0.0; color: "lightsteelblue" }
-                            GradientStop { position: 1.0; color: "blue" }
-                    }
+              alternateBackgroundColor : "#DCDCDC" // vipadaet
+              backgroundColor : "#DCDCDC" // osnovnoi
+              textColor: "#000000"
 
-            }
-          }
     }
 
     MouseArea {
@@ -96,57 +112,41 @@ ApplicationWindow {
                        {
                        var index_1 = parent.indexAt(mouse.x, mouse.y);
                        if (index_1.valid)
-                       { parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);}
+                       {
+                           if(mymodel.data(index_1,1))
+                           {
+                               im.source = mymodel.data(index_1,1);
+
+                           }
+                           else
+                           {
+                               parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
+
+                           }
+
                        }
         }
+    }
+
+    Image
+     {
+         id: im
+         x: 240
+         y: 10
+         width: 550
+         height: 550
+         fillMode: Image.PreserveAspectFit
+     }
+
+
 
 
     TableViewColumn{
-    title:"Choose the lection"
     role: "display"
     width:500 //появляется прокрутка
-
         }
-
-
-
 }
-
 }
-
-
-
-
-
-
-// in treeview
-
-//headerVisible : false
-/*  itemDelegate: Item {
-    Text {
-        anchors.verticalCenter: parent.verticalCenter
-        color: "#191970"
-        elide: styleData.elideMode
-        text: styleData.value
-         }
-}*/
-/* Mogno dlya krasoti
-contentFooter : Component {
-              Rectangle {
-                color: "#008B8B"
-                width: parent.width
-                height: 25
-            }
-        }
-contentHeader: Component { // zachem!?
-      Rectangle {
-        color: "#008B8B"
-        width: parent.width
-        height: 25
-    }
-}*/
-
-
 
 
 
