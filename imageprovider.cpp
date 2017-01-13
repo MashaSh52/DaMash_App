@@ -4,6 +4,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QPixmap>
+#include <QUrl>
 
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
@@ -74,14 +75,13 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
         else return ddd->number;
     }
 
-    /*if (role == Qt::DecorationRole && ddd->type == IMAGE)
+    if (role == Qt::DecorationRole && ddd->type == IMAGE)
     {
         IData* temp = (IData* )ddd->data;
-        return temp->path;
-       // return ddd->number;
+        return QUrl::fromLocalFile(temp->path);
     }
 
-    return QVariant();*/
+    return QVariant();
 }
 
 int ImageProvider::columnCount(const QModelIndex &parent) const
