@@ -132,21 +132,25 @@ ApplicationWindow {
                                im.source = mymodel.data(index_1,1);
 
                            }
-                           else
+
+                              else
                            {// parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
                                if (parent.isExpanded(index_1)) // razvernut
                                // nado svernuti vseh
                                {
-
-                                   var children = getChildrenIndexesOfItem(index_1);
-                                   for (var i = 0; i < children.length; i++)
+                                   var children = mymodel.getChildrenIndexesOfItem(index_1);
+                                   for (var i = children.length-1; i >= 0; i--)
                                    {
 
-                                        if (parent.isExpanded(i)) {parent.collapse(i)}
+                                        if (parent.isExpanded(children[i])) {
+                                            parent.collapse(children[i])
+                                        }
                                    }
                                    parent.collapse(index_1)
                                }
-                               else { parent.expand(index_1); } // razvorachivaem tolko ego
+                               else {
+                                   parent.expand(index_1);
+                               } // razvorachivaem tolko ego
                            }
 
                        }
