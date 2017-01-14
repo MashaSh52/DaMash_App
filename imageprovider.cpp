@@ -296,7 +296,7 @@ bool ImageProvider::deleteElement(QModelIndex currentIndex)
         ++row;
     }
 
-  //  beginResetModel();
+    beginResetModel();
     if(curData->children.size() > 0)
     {
         int firstFloorRow = curData->children.size();
@@ -355,8 +355,7 @@ bool ImageProvider::deleteElement(QModelIndex currentIndex)
         parentData->count--;
     endRemoveRows();
 
-    //this->fetchMore(parent);
-  //  endResetModel();
+    endResetModel();
     return 0;
 
 }
