@@ -153,11 +153,17 @@ bool ImageProvider::hasChildren(const QModelIndex &parent) const
 
 bool ImageProvider::addNewTerm(QString nameOfTerm)
 {
-    //TODO: проверка на существование семестра
-
     if(!this->index(0,0,QModelIndex()).isValid())
         return 1;
     QModelIndex i = createIndex(0,0, &dw);
+
+    for(auto it = dw.children.begin(); it != dw.children.end(); ++it)
+    {
+        HData* insideData = (HData*)(*it)->data;
+        if(insideData->name == nameOfTerm)
+            return 1;
+    };
+
     qint16 t = this->rowCount(i);
     beginInsertRows(QModelIndex(), t, t);
 
@@ -189,7 +195,14 @@ bool ImageProvider::addNewCourse(QModelIndex currentIndex, QString nameOfCourse)
     if(!currentIndex.isValid())
         return 1;
 
-    DataWrapper* curTerm = dataForIndex(currentIndex);
+    DataWrapper* curTerm = dataForIndex(currentIndex);    
+    for(auto it=curTerm->children.begin(); it != curTerm->children.end(); ++it)
+    {
+        HData* insideData = (HData*)(*it)->data;
+        if(insideData->name == nameOfCourse)
+            return 1;
+    }
+
     int t = this->rowCount(currentIndex);
     beginInsertRows(currentIndex, t, t);
 
@@ -220,7 +233,13 @@ bool ImageProvider::addNewImage(QModelIndex currentIndex, QString path, QString 
     if(!currentIndex.isValid())
         return 1;
 
-    DataWrapper* curCourse = dataForIndex(currentIndex);
+    DataWrapper* curCourse = dataForIndex(currentIndex);   
+    for(auto it=curCourse->children.begin(); it != curCourse->children.end(); ++it)
+    {
+        IData* insideData = (IData*)(*it)->data;
+        if(insideData->path == path)
+            return 1;
+    }
     int t = this->rowCount(currentIndex);
     beginInsertRows(currentIndex, t, t);
 
