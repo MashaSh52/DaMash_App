@@ -350,7 +350,7 @@ QVariantList ImageProvider::getChildrenIndexesOfItem(QModelIndex currentIndex)
 
 qint16 ImageProvider::whatElementIsIt(QModelIndex currentIndex)
 {
-    DataWrapper* currentData = dataForIndex(currentTerm);
+    DataWrapper* currentData = dataForIndex(currentIndex);
     if(currentData->type == TERM)
         return 1;
     if(currentData->type == COURSE)
