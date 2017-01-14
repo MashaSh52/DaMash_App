@@ -47,8 +47,6 @@ public:
     ~ImageProvider();
 
     bool setData(const QModelIndex &index, const QVariant &value, int role);
-
-
     virtual QVariant data(const QModelIndex &index, int role) const;
     virtual int columnCount(const QModelIndex &parent) const;
     virtual int rowCount(const QModelIndex &parent) const;
@@ -58,7 +56,6 @@ public:
     void fetchMore(const QModelIndex &parent);
     bool canFetchMore(const QModelIndex &parent) const;
     bool hasChildren(const QModelIndex &parent) const;
-    int cf;
 
     // === FOR INTERFACE ===
 
@@ -106,6 +103,16 @@ public:
      **/
     Q_INVOKABLE QVariantList getChildrenIndexesOfItem(QModelIndex currentIndex);
 
+    /*
+     * whatTermIsIt - возвращает значение элемента по индексу, на который кликнули
+     *
+     * 0 - если ROOT
+     * 1 - если TERM
+     * 2 - если COURSE
+     * 3 - если IMAGE
+     *
+     * */
+    Q_INVOKABLE qint16 whatElementIsIt(QModelIndex currentIndex);
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};

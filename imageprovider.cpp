@@ -9,8 +9,7 @@
 
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
-    cf=0;
-    //Лезем в БД и подгружаем все данные
+    Q_UNUSED(parent);
     database = QSqlDatabase::addDatabase("QSQLITE");
     database.setDatabaseName(nameOfDB);
     if(!database.open()){
@@ -53,7 +52,7 @@ bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int
     }
     }
 
-    DataWrapper* tempDW = dataForIndex(index);
+    //DataWrapper* tempDW = dataForIndex(index);
     emit dataChanged(index, index);
     return true;
 }
@@ -178,8 +177,9 @@ bool ImageProvider::addNewTerm(QString nameOfTerm)
     endInsertRows();
 
     QModelIndex index = createIndex(t,0,dw.children[t]);
-    DataWrapper* dddd = dataForIndex(index);
+    //DataWrapper* dddd = dataForIndex(index);
     this->setData(index, nameOfTerm, Qt::EditRole);
+    return 0;
 
 }
 
@@ -210,6 +210,7 @@ bool ImageProvider::addNewCourse(QModelIndex currentIndex, QString nameOfCourse)
 
     QModelIndex index = createIndex(t,0,curTerm->children[t]);
     this->setData(index, nameOfCourse, Qt::EditRole);
+    return 0;
 
 }
 
@@ -242,99 +243,9 @@ bool ImageProvider::addNewImage(QModelIndex currentIndex, QString path, QString 
 
     QModelIndex index = createIndex(t,0,curCourse->children[t]);
     this->setData(index, toCreateImgPost, Qt::EditRole);
+    return 0;
 
 }
-
-/*bool ImageProvider::deleteTerm(QModelIndex currentIndex)
-{
-    QModelIndex rootIndex = QModelIndex();
-    DataWrapper *root = dataForIndex(rootIndex);
-
-    this->fetchMore(currentIndex);
-    DataWrapper * term = dataForIndex(currentIndex);
-
-
-    int i = term->count-1;
-    while(term->count != 0)
-    {
-        QModelIndex courseIndex = index(i,0,currentIndex);
-        deleteCourse(courseIndex);
-        i = i - 1;
-    }
-
-
-
-    beginRemoveRows(rootIndex, term->number-1, term->number-1);
-    root->children.removeAt(term->number-1);
-    root->count--;
-    endRemoveRows();
-
-    QSqlQuery queryForDelete;
-    queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
-    queryForDelete.bindValue(":ID", term->id);
-    queryForDelete.exec();
-
-    return true;
-
-
-}
-
-bool ImageProvider::deleteCourse(QModelIndex currentIndex)
-{
-
-    if(!currentIndex.isValid())
-        return 0;
-
-    DataWrapper *deletedCourse = dataForIndex(currentIndex);
-    this->fetchMore(currentIndex);
-    DataWrapper *course= dataForIndex(deletedCourse);
-
-    while(course->count != 0)
-        deleteImage(termNumber,courseNumber,course->count-1);
-
-
-    beginRemoveRows(termIndex, courseNumber, courseNumber);
-    term->children.removeAt(courseNumber);
-    term->count--;
-    endRemoveRows();
-
-    QSqlQuery queryForDelete;
-    queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
-    queryForDelete.bindValue(":ID", course->id);
-    queryForDelete.exec();
-
-    return true;
-
-}
-
-bool ImageProvider::deleteImage(qint16 termNumber, qint16 courseNumber, qint16 imgNumber)
-{
-    QModelIndex termIndex = this->index(termNumber,0,QModelIndex());
-    QModelIndex courseIndex = this->index(courseNumber,0,termIndex);
-    QModelIndex imgIndex = this->index(imgNumber, 0, courseIndex);
-
-    if(!imgIndex.isValid())
-        return 1;
-
-    DataWrapper *term = dataForIndex(termIndex);
-    DataWrapper *course = dataForIndex(courseIndex);
-    DataWrapper *img = dataForIndex(imgIndex);
-
-
-
-    beginRemoveRows(courseIndex, imgNumber, imgNumber);
-    course->children.removeAt(imgNumber);
-    course->count--;
-    endRemoveRows();
-
-    QSqlQuery queryForDelete;
-    queryForDelete.prepare("DELETE FROM IMAGES WHERE ID = :ID");
-    queryForDelete.bindValue(":ID", img->id);
-    queryForDelete.exec();
-
-    return true;
-
-}*/
 
 bool ImageProvider::deleteElement(QModelIndex currentIndex)
 {
@@ -402,6 +313,7 @@ bool ImageProvider::deleteElement(QModelIndex currentIndex)
     parentData->children.removeAt(curData->number-1);
         curData->count--;
     endRemoveRows();
+    return 0;
 
 }
 
@@ -426,7 +338,7 @@ QVariantList ImageProvider::getChildrenIndexesOfItem(QModelIndex currentIndex)
             {
                 for(int j = 0; j < firstFloor->children.size(); ++j)
                 {
-                    DataWrapper* secondFloor = firstFloor->children[j];
+                    //DataWrapper* secondFloor = firstFloor->children[j];
                     QModelIndex secondIndex = index(j, 0, firstIndex);
                     res.push_back(secondIndex);
                 }
@@ -436,10 +348,21 @@ QVariantList ImageProvider::getChildrenIndexesOfItem(QModelIndex currentIndex)
     return res;
 }
 
+qint16 ImageProvider::whatElementIsIt(QModelIndex currentIndex)
+{
+    DataWrapper* currentData = dataForIndex(currentTerm);
+    if(currentData->type == TERM)
+        return 1;
+    if(currentData->type == COURSE)
+        return 2;
+    if(currentData->type == IMAGE)
+        return 3;
+    return 0;
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
-    cf = cf+1;
     DataWrapper* data = dataForIndex(parent);
     data->children.clear();
     QSqlQuery query;
@@ -500,8 +423,6 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     data->count = data->children.size();
 
     endInsertRows();
-//    if(cf == 2)
-//        this->getChildrenIndexesOfTerm(0);
 
 }
 
