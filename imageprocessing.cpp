@@ -1,7 +1,10 @@
 #include <QImage>
+#include <QPainter>
 #include <QTransform>
 #include <imageprocessing.h>
 #include <QRect>
+#include <QPrinter>
+#include <QPrintDialog>
 
 
 QImage rotateImage(QString pathToImage, qreal angle)
@@ -40,4 +43,23 @@ QImage makeBlackAndWhiteImage(QString pathToImage)
         }
     }
     return bw;
+}
+
+/*
+ * Ошибка на инициализации диалога. Попытаться сделать с qml
+ * */
+bool printPhoto(QString pathToImage)
+{
+    QPrinter printer;
+    QPrintDialog* dlg = new QPrintDialog(&printer,0);
+
+    if(dlg->exec() == QDialog::Accepted) {
+                    QImage img(pathToImage);
+                    QPainter painter(&printer);
+                    painter.drawImage(QPoint(0,0),img);
+                    painter.end();
+            }
+
+    delete dlg;
+    return 0;
 }

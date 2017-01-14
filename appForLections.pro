@@ -1,4 +1,4 @@
-QT += qml quick sql
+QT += qml quick sql printsupport
 
 RESOURCES += qml.qrc
 

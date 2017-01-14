@@ -29,4 +29,6 @@ QImage cropImage(QString pathToImage, int x1, int y1, int x2, int y2);
 
 QImage makeBlackAndWhiteImage(QString pathToImage);
 
+bool printPhoto(QString pathToImage);
+
 #endif // IMAGEPROCESSING_H
