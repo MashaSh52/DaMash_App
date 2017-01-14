@@ -1,12 +1,11 @@
-QT += qml quick sql printsupport
+QT += qml quick sql printsupport core
 
 RESOURCES += qml.qrc
 
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    imageprovider.cpp \
-    imageprocessing.cpp
+    imageprovider.cpp
 
 
 
@@ -19,5 +18,4 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    imageprovider.h \
-    imageprocessing.h
+    imageprovider.h

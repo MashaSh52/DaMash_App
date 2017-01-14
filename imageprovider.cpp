@@ -3,9 +3,16 @@
 #include <QDebug>
 #include <QSqlQuery>
 #include <QSqlError>
+
+#include <QImage>
 #include <QPixmap>
+#include <QPainter>
+#include <QTransform>
 #include <QUrl>
-#include <imageprocessing.h>
+
+#include <QRect>
+#include <QPrinter>
+#include <QPrintDialog>
 
 QModelIndex transitIndex;
 
@@ -193,7 +200,6 @@ bool ImageProvider::addNewTerm(QString nameOfTerm)
 
 bool ImageProvider::addNewCourse(QModelIndex currentIndex, QString nameOfCourse)
 {
-    //TODO: проверка на существование курса
     if(!currentIndex.isValid())
         return 1;
 
@@ -276,64 +282,81 @@ bool ImageProvider::deleteElement(QModelIndex currentIndex)
     DataWrapper* curData = dataForIndex(currentIndex);
     this->fetchMore(currentIndex);
 
+    int row = 0;
 
     QModelIndex parent = QModelIndex();
     if(curData->type != TERM)
         parent = currentIndex.parent();
     DataWrapper* parentData = dataForIndex(parent);
 
+    for(auto it = parentData->children.begin(); it != parentData->children.end(); ++it)
+    {
+        if((*it)->id == curData->id)
+            break;
+        ++row;
+    }
+
+  //  beginResetModel();
     if(curData->children.size() > 0)
     {
-        for (int i = 0; i < curData->children.size();++i)
+        int firstFloorRow = curData->children.size();
+        for (int i = 0; i < firstFloorRow;++i)
         {
             //COURSES
-            DataWrapper* firstFloor = curData->children[i];
-            QModelIndex firstIndex = index(i,0,currentIndex);
+            DataWrapper* firstFloor = curData->children[0];
+            QModelIndex firstIndex = index(0,0,currentIndex);
             this->fetchMore(firstIndex);
 
             if(firstFloor->children.size() > 0)
             {
                 //IMAGES
-                beginRemoveRows(firstIndex, 0, firstFloor->count-1);
-                for(int k = 0; k < firstFloor->count;++k)
+
+                int lim2 = firstFloor->count;
+                for(int k = 0; k < lim2;++k)
                 {
                     QSqlQuery queryForDelete;
                     queryForDelete.prepare("DELETE FROM IMAGES WHERE ID = :ID");
-                    queryForDelete.bindValue(":ID", firstFloor->children[k]->id);
+                    queryForDelete.bindValue(":ID", firstFloor->children[0]->id);
                     queryForDelete.exec();
-
-                    firstFloor->children.removeAt(k);
+                    beginRemoveRows(firstIndex, 0, 0);
+                    firstFloor->children.removeAt(0);
                     firstFloor->count--;
+                    endRemoveRows();
                 }
-                endRemoveRows();
+
 
             }
 
-            beginRemoveRows(currentIndex,0,curData->count-1);
-            for(int k = 0; k < curData->count;++k)
-            {
-                QSqlQuery queryForDelete;
-                queryForDelete.prepare("DELETE FROM RELATIONSHIOS WHERE ID = :ID");
-                queryForDelete.bindValue(":ID", curData->children[k]->id);
-                queryForDelete.exec();
+            beginRemoveRows(currentIndex,0,0);
+            QSqlQuery queryForDelete;
+            if (firstFloor->type == COURSE)
+                queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
+            if(firstFloor->type == IMAGE)
+                queryForDelete.prepare("DELETE FROM IMAGES WHERE ID = :ID");
+            queryForDelete.bindValue(":ID", firstFloor->id);
+            queryForDelete.exec();
 
-                curData->children.removeAt(k);
-                curData->count--;
-             }
+            curData->children.removeAt(0);
+            curData->count--;
             endRemoveRows();
         }
     }
 
-    beginRemoveRows(parent,curData->number-1,curData->number-1);
-
+    beginRemoveRows(parent,row, row);
     QSqlQuery queryForDelete;
-    queryForDelete.prepare("DELETE FROM RELATIONSHIOS WHERE ID = :ID");
+    if (curData->type == TERM || curData->type == COURSE)
+        queryForDelete.prepare("DELETE FROM RELATIONSHIPS WHERE ID = :ID");
+    if(curData->type == IMAGE)
+        queryForDelete.prepare("DELETE FROM IMAGES WHERE ID = :ID");
     queryForDelete.bindValue(":ID", curData->id);
     queryForDelete.exec();
 
-    parentData->children.removeAt(curData->number-1);
-        curData->count--;
+    parentData->children.removeAt(row);
+        parentData->count--;
     endRemoveRows();
+
+    //this->fetchMore(parent);
+  //  endResetModel();
     return 0;
 
 }
@@ -394,6 +417,63 @@ QModelIndex ImageProvider::getTransitIndex()
     if (!transitIndex.isValid())
         return QModelIndex();
     return transitIndex;
+}
+
+QUrl ImageProvider::rotateImage(QString pathToImage, QString newPath, qreal angle)
+{
+    QImage defaultImage(pathToImage);
+    QTransform rotating;
+    rotating.rotate(angle);
+
+    QImage newImage;
+    newImage = defaultImage.transformed(rotating);
+    newImage.save(newPath);
+    return QUrl::fromLocalFile(newPath);
+}
+
+QUrl ImageProvider::cropImage(QString pathToImage, QString newPath, int x1, int y1, int x2, int y2)
+{
+    QRect rect(x1, y1, x2, y2);
+    QImage original(pathToImage);
+    QImage cropped = original.copy(rect);
+    cropped.save(newPath);
+    return QUrl::fromLocalFile(newPath);
+}
+
+QUrl ImageProvider::makeBlackAndWhiteImage(QString pathToImage, QString newPath)
+{
+    QImage original(pathToImage);
+    QImage bw = original;
+    QSize sizeImage = original.size();
+    int width = sizeImage.width(), height = sizeImage.height();
+
+    QRgb color;
+
+    for (int f1=0; f1<width; f1++) {
+        for (int f2=0; f2<height; f2++) {
+            color = bw.pixel(f1,f2);
+            int gray = (qRed(color) + qGreen(color) + qBlue(color))/3;
+            bw.setPixel(f1, f2, qRgb(gray, gray, gray));
+        }
+    }
+    bw.save(newPath);
+    return QUrl::fromLocalFile(newPath);
+}
+
+bool ImageProvider::printPhoto(QString pathToImage)
+{
+    QPrinter printer;
+    QPrintDialog* dlg = new QPrintDialog(&printer,0);
+
+    if(dlg->exec() == QDialog::Accepted) {
+                    QImage img(pathToImage);
+                    QPainter painter(&printer);
+                    painter.drawImage(QPoint(0,0),img);
+                    painter.end();
+            }
+
+    delete dlg;
+    return 0;
 }
 
 
@@ -611,6 +691,18 @@ bool ImageProvider::createNewImage(QModelIndex &parent, const QString path, cons
     newImg->number = num + 1;
     return 0;
 }
+
+/*bool ImageProvider::deleteAllChildren(QModelIndex currentIndex)
+{
+    QVariantList listOfChildren = getChildrenIndexesOfItem(currentIndex);
+    for(int i = 0; it != listOfChildren.end(); ++it)
+    {
+        delete (*it);
+    }
+    return 0;
+
+
+}*/
 
 bool ImageProvider::createNewTerm(QString nameOfTerm)
 {

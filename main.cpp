@@ -1,7 +1,6 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include "imageprovider.h"
-#include "imageprocessing.h"
 #include <QQmlContext>
 //#include <QApplication>
 //#include <QTreeView>

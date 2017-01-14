@@ -4,7 +4,7 @@
 #include<QAbstractItemModel>
 #include <QSqlDatabase>
 #include <QStringList>
-
+#include <QUrl>
 enum element_type {ROOT, TERM = 1, COURSE, IMAGE};
 
 /*
@@ -117,6 +117,10 @@ public:
     Q_INVOKABLE qint16 whatElementIsIt(QModelIndex currentIndex);
     Q_INVOKABLE bool setTransitIndex(QModelIndex ind);
     Q_INVOKABLE QModelIndex getTransitIndex();
+    Q_INVOKABLE QUrl rotateImage(QString pathToImage, QString newPath, qreal angle);
+    Q_INVOKABLE QUrl cropImage(QString pathToImage, QString newPath, int x1, int y1, int x2, int y2);
+    Q_INVOKABLE QUrl makeBlackAndWhiteImage(QString pathToImage, QString newPath);
+    Q_INVOKABLE bool printPhoto(QString pathToImage);
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};
@@ -130,6 +134,7 @@ private:
     bool createNewTerm(const QString nameOfTerm);
     bool createNewCourse(QModelIndex &parent, const QString nameOfCourse);
     bool createNewImage(QModelIndex &parent, const QString path, const QString comment, const QStringList tags);
+    bool deleteAllChildren(QModelIndex currentIndex);
 
 
 
