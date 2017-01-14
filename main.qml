@@ -25,44 +25,23 @@ ApplicationWindow {
 
     title: qsTr("LECTIONS")
 
-    menuBar: MenuBar {
-             style: MenuBarStyle { background:  Rectangle { color: "#696969" } }
-
-
-        Menu {
-            title: qsTr("File")
-            style: MenuStyle {
-                frame:  Rectangle {color: "#000000"}
-                itemDelegate.background : Rectangle {color: "#C0C0C0"}
-            }
-
-            MenuItem {
-                text: qsTr("Exit")
-                onTriggered: Qt.quit();
-            }
-            MenuItem {
-                text: qsTr("Print")
-                //onTriggered:  MessageDialog.show(qsTr("Open action triggered")); v chem raznica?
-                action: console.log("Open action triggered");
-            }
-        }
-    }
-
     Button
     {
        id:button1
-        x: 3
-        y: 20
+        x: 5
+        y: 3
         style: ButtonStyle {
             label: Text {
                 text: qsTr("Add New Term")
                 color: control.pressed ? "#696969" : "#FFFFFF"
             }
             background: Rectangle {
+                implicitWidth: 100
+                implicitHeight: 25
                 color: control.pressed ? "#DCDCDC" : "#696969"
-                border.color: "#696969"
-                border.width: 0.5
-                radius: 2
+                border.color: "#000000"
+                border.width: 1
+                radius: 3
             }
         }
         onClicked: popup1.open()//adding1.visible = true
@@ -70,13 +49,11 @@ ApplicationWindow {
 
     }
 
-
-
     TreeView {
     id: treeView
     //backgroundVisible : false
-    x: 3
-    y: 53
+    x: 5
+    y: 36
     headerVisible : false
     width: parent.width/3.5 //ширина
     height: parent.height - 60
@@ -102,7 +79,7 @@ ApplicationWindow {
 
     TableViewColumn{
     role: "display"
-    width:500 //появляется прокрутка
+    width:2*treeView.width
         }
 
     MouseArea {
@@ -133,6 +110,9 @@ ApplicationWindow {
                            if(dbModel.data(iLeft,1))
                            {
                                im.source = dbModel.data(iLeft,1);
+                               dbModel.setTransitIndex(iLeft);
+                               printButton.visible = true
+                               imProcButton.visible = true
 
                            }
                            else
@@ -368,6 +348,58 @@ ApplicationWindow {
                            }
                     }
         }
+    }
+}
+
+
+    GridLayout {
+        rowSpacing: 2
+        y: 3
+        x: parent.width - 110
+
+// PRINT BUTTON
+    Button
+    {
+       id:printButton
+       visible: false
+        style: ButtonStyle {
+            label: Text {
+                text: qsTr("Print")
+                color: control.pressed ? "#696969" : "#FFFFFF"
+            }
+            background: Rectangle {
+                implicitWidth: 100
+                implicitHeight: 25
+                color: control.pressed ? "#DCDCDC" : "#696969"
+                border.color: "#000000"
+                border.width: 1
+                radius: 3
+            }
+        }
+        onClicked: popup_print.open() // + printFunction
+    }
+
+// PROCESSING BUTTON
+    Button
+    {
+       id:imProcButton
+       visible: false
+        Layout.row: 1
+        style: ButtonStyle {
+            label: Text {
+                text: qsTr("Processing")
+                color: control.pressed ? "#696969" : "#FFFFFF"
+            }
+            background: Rectangle {
+                implicitWidth: 100
+                implicitHeight: 25
+                color: control.pressed ? "#DCDCDC" : "#696969"
+                border.color: "#000000"
+                border.width: 1
+                radius: 3
+            }
+        }
+        onClicked: popup_filters.open()
 
 
     }
@@ -375,68 +407,230 @@ ApplicationWindow {
 
 
 
-
-
-
-
-
-
-
-
-
-
 }
-}
-
-
-
-
-
-
-
-/*
-    Rectangle {
-        id:adding1
-        visible: false
-        anchors.centerIn: parent
-        width: 300
+// PRINTING MESSAGE
+    Popup {
+        id: popup_print
+        x:root.width/2
+        y:root.height/4
+        width: 200
         height: 100
-        color: "#696969"
-      //  antialiasing: false
+        background: Rectangle { color: "#696969" }
+        Label {
+                    text: qsTr("Printing. Please,wait...")
+                }
 
-        Column {
-               spacing: 10
-               anchors.centerIn: parent
+    }
+
+
+
+// IMAGE PROCESSING CheckBox
+
+    Popup {
+        id: popup_filters
+        x:root.width/2
+        y:root.height/4
+        visible: false
+        background: Rectangle { color: "#696969" }
+        ColumnLayout{
+        Label {
+                    text: qsTr("Type of processing")
+                }
+        Button {
+            id: rotate_button
+          //  text: qsTr("Rotate")
+            style: ButtonStyle {
+                       label: Text {
+                           text: qsTr("Rotate")
+                           color: control.pressed ? "#696969" : "#FFFFFF"
+                       }
+                       background: Rectangle {
+                           implicitWidth: 100
+                           implicitHeight: 25
+                           color: control.pressed ? "#DCDCDC" : "#696969"
+                           border.color: "#000000"
+                           border.width: 1
+                           radius: 3
+                       }
+                   }
+            onClicked: { popup_rotate.open()
+                popup_filters.close()
+            }
+
+        }
+        Button {
+            id: crop_button
+          //  text: qsTr("Crop")
+            style: ButtonStyle {
+                label: Text {
+                    text: qsTr("Crop")
+                    color: control.pressed ? "#696969" : "#FFFFFF"
+                }
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#DCDCDC" : "#696969"
+                    border.color: "#000000"
+                    border.width: 1
+                    radius: 3
+                }
+            }
+            onClicked: {
+                popup_crop.open()
+                popup_filters.close()
+            }
+        }
+        Button {
+            id: baw_button
+            //text: qsTr("Black and White")
+            style: ButtonStyle {
+                label: Text {
+                    text: qsTr("Black and White")
+                    color: control.pressed ? "#696969" : "#FFFFFF"
+                }
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#DCDCDC" : "#696969"
+                    border.color: "#000000"
+                    border.width: 1
+                    radius: 3
+                }
+            }
+            onClicked:  { new_im.source = dbModel.makeBlackAndWhiteImage(dbModel.getTransitIndex());
+
+                popup_filters.close();}
+        }
+
+    }
+}
+
+// SHOW THE PROCESSED IMAGE
+    Image
+     {
+         id: new_im
+         x: parent.width/3
+         width: root.width
+         height: parent.height
+         fillMode: Image.PreserveAspectFit
+     }
+
+// ROTATION
+    Popup {
+        id: popup_rotate
+        x:root.width/2
+        y:root.height/4
+        visible: false
+        background: Rectangle { color: "#696969" }
+
+        ColumnLayout{
+
+            spacing: 10
+            anchors.centerIn: parent
+
+        Label {
+                    text: qsTr("PARAMETER")
+                }
 
         TextField {
-            id: textField1
-            objectName: "textField1"
-            placeholderText: qsTr("Enter the Term")
+            id: angle
+            placeholderText: qsTr("angle = ")
             width: 250
             textColor: "#696969"
         }
 
         Button {
-            id:button2
+            id:button_close_1
              style: ButtonStyle {
                  label: Text {
-                     text: qsTr("Add")
+                     text: qsTr("Rotate")
                      color: control.pressed ? "#696969" : "#FFFFFF"
                  }
                  background: Rectangle {
                      color: control.pressed ? "#DCDCDC" : "#696969"
-                     border.color: "#696969"
+                     border.color: "#000000"
                      border.width: 0.5
                      radius: 2
                  }
              }
              onClicked: {
-                 dbModel.addNewTerm(textField1.text);
-                 adding1.visible = false
+                 new_im.source = dbModel.rotateImage(dbModel.getTransitIndex(), angle);
+                 popup_rotate.close()
                               }
                }
         }
+    }
 
+// CROP
+    Popup {
+        id: popup_crop
+        x:root.width/2
+        y:root.height/4
+        visible: false
+        background: Rectangle { color: "#696969" }
+        ColumnLayout{
+        Label {
+                    text: qsTr("PARAMETERS")
+                }
+        TextField {
+            id: x1
+            placeholderText: qsTr("x1 = ")
+            width: 250
+            textColor: "#696969"
+        }
+        TextField {
+            id: x2
+            placeholderText: qsTr("x2 = ")
+            width: 250
+            textColor: "#696969"
+        }
+        TextField {
+            id: y1
+            placeholderText: qsTr("y1 = ")
+            width: 250
+            textColor: "#696969"
+        }
+        TextField {
+            id: y2
+            placeholderText: qsTr("y2 = ")
+            width: 250
+            textColor: "#696969"
+        }
+        Button {
+            id:button_close_2
+             style: ButtonStyle {
+                 label: Text {
+                     text: qsTr("Crop")
+                     color: control.pressed ? "#696969" : "#FFFFFF"
+                 }
+                 background: Rectangle {
+                     color: control.pressed ? "#DCDCDC" : "#696969"
+                     border.color: "#000000"
+                     border.width: 0.5
+                     radius: 2
+                 }
+             }
+             onClicked: {
+                 new_im.source = dbModel.cropImage(dbModel.getTransitIndex(),x1, y1, x2, y2);
+                 popup_crop.close()
+                              }
+               }
 
-    }*/
+        }
+    }
+  /*  ButtonStyle {
+        id: button_style
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#DCDCDC" : "#696969"
+                    border.color: "#000000"
+                    border.width: 1
+                    radius: 3
+                }
+            }
+*/
+
+}
+
 
