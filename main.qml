@@ -1,5 +1,6 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.0
 import QtQuick.Controls 1.2
 import QtQuick.Controls.Styles 1.4
@@ -7,33 +8,22 @@ import QtQuick.Particles 2.0
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
 
+import QtQuick.Controls.Material 2.0
+
 
 
 
 ApplicationWindow {
     id: root
-    width: 760
+    width: 860
     height: 600
     visible: true
-    color: "#F5F5F5"
+    color: "#F5F5F5"//"#F5F5F5"
 
     title: qsTr("LECTIONS")
 
     menuBar: MenuBar {
-
-        style: MenuBarStyle {
-
-             background: Component {
-                Rectangle {
-                    gradient: Gradient {
-                        GradientStop { position: 0.0; color: "#696969" }
-                        GradientStop { position: 1.0; color: "#C0C0C0" }
-                }
-                }
-
-            }
-        }
-
+             style: MenuBarStyle { background:  Rectangle { color: "#696969" } }
 
 
         Menu {
@@ -54,30 +44,73 @@ ApplicationWindow {
                 action: console.log("Open action triggered");
             }
         }
-        Menu {
-            title: qsTr("Add..")
-            style: MenuStyle {
-                frame:  Rectangle {color: "#000000"}
-                itemDelegate.background : Rectangle {color: "#C0C0C0"}
+
+    }
+
+    Button
+    {
+       id:button1
+        x: 3
+        y: 20
+        style: ButtonStyle {
+            label: Text {
+                text: qsTr("Add New Term")
+                color: control.pressed ? "#696969" : "#FFFFFF"
             }
-
-
-            MenuItem {
-                text: qsTr("&Add new Term")
-                onTriggered: popup.open()
-            }
-
-
-
-            MenuItem {
-                text: qsTr("&Add the subject")
-                onTriggered: messageDialog.show(qsTr("Button 2 pressed"))
-            }
-            MenuItem {
-                text: qsTr("&Add the lection page")
-                onTriggered: messageDialog.show(qsTr("Button 3 pressed"))
+            background: Rectangle {
+                color: control.pressed ? "#DCDCDC" : "#696969"
+                border.color: "#696969"
+                border.width: 0.5
+                radius: 2
             }
         }
+        onClicked: adding1.visible = true
+
+
+    }
+
+    Rectangle {
+        id:adding1
+        visible: false
+        anchors.centerIn: parent
+        width: 300
+        height: 100
+        color: "#696969"
+
+     /*   Material.theme: Material.Light
+        Material.primary: Material.BlueGray
+        Material.accent: Material.Teal*/
+
+        Column {
+               spacing: 10
+               anchors.centerIn: parent
+
+        TextField {
+            id: textField1
+            objectName: "textField1"
+            placeholderText: qsTr("Enter the Term")
+            width: 250
+            textColor: "#696969"
+        }
+
+        Button {
+            id:button2
+             style: ButtonStyle {
+                 label: Text {
+                     text: qsTr("Add")
+                     color: control.pressed ? "#696969" : "#FFFFFF"
+                 }
+                 background: Rectangle {
+                     color: control.pressed ? "#DCDCDC" : "#696969"
+                     border.color: "#696969"
+                     border.width: 0.5
+                     radius: 2
+                 }
+             }
+             onClicked: console.log("It works");
+               }
+        }
+
 
     }
 
@@ -106,16 +139,16 @@ ApplicationWindow {
     id: treeView
     //backgroundVisible : false
     x: 3
-    y: 3
+    y: 53
     headerVisible : false
-    width: parent.width/3 //ширина
-    height: parent.height - 6
-    model: mymodel
+    width: parent.width/3.5 //ширина
+    height: parent.height - 60
+    model: dbModel
 
     style: TreeViewStyle {
-              alternateBackgroundColor : "#DCDCDC" // vipadaet
-              backgroundColor : "#DCDCDC" // osnovnoi
-              textColor: "#000000"
+              alternateBackgroundColor : "#696969" // vipadaet
+              backgroundColor : "#696969" // osnovnoi
+              textColor: "#FFFFFF"
 
     }
 
@@ -124,33 +157,31 @@ ApplicationWindow {
             anchors.fill: parent
             onClicked: if (mouse.button === Qt.LeftButton)
                        {
-                       var index_1 = parent.indexAt(mouse.x, mouse.y);
-                       if (index_1.valid)
+                       var ind = parent.indexAt(mouse.x, mouse.y);
+                       if (ind.valid)
                        {
-                           if(mymodel.data(index_1,1))
+                           if(dbModel.data(ind,1))
                            {
-                               im.source = mymodel.data(index_1,1);
+                               im.source = dbModel.data(ind,1);
 
                            }
+                           else
+                           {// parent.isExpanded(ind) ? parent.collapse(ind) : parent.expand(ind);
+                               if (parent.isExpanded(ind))
+                                    {
 
-                              else
-                           {// parent.isExpanded(index_1) ? parent.collapse(index_1) : parent.expand(index_1);
-                               if (parent.isExpanded(index_1)) // razvernut
-                               // nado svernuti vseh
-                               {
-                                   var children = mymodel.getChildrenIndexesOfItem(index_1);
-                                   for (var i = children.length-1; i >= 0; i--)
-                                   {
+                                   var children = dbModel.getChildrenIndexesOfItem(ind);
+                                         for (var i = children.length-1; i >= 0; i--)
+                                           {
 
-                                        if (parent.isExpanded(children[i])) {
-                                            parent.collapse(children[i])
-                                        }
-                                   }
-                                   parent.collapse(index_1)
+                                              if (parent.isExpanded(children[i]))
+                                              {
+                                                parent.collapse(children[i])
+                                              }
+                                     }
+                                  // parent.collapse(ind)
                                }
-                               else {
-                                   parent.expand(index_1);
-                               } // razvorachivaem tolko ego
+                               else { parent.expand(ind); }
                            }
 
                        }
@@ -160,10 +191,10 @@ ApplicationWindow {
     Image
      {
          id: im
-         x: 240
-         y: 10
-         width: 550
-         height: 550
+         x: parent.width
+         y: -20
+         width: 500
+         height: 530
          fillMode: Image.PreserveAspectFit
      }
 
@@ -174,15 +205,5 @@ ApplicationWindow {
         }
 }
 }
-
-
-
-
-
-
-
-
-
-
 
 

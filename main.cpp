@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     ImageProvider model("/home/skt/appForLections/db");
  //   ImageProvider model("/home/skt/appForLections/DaMash_App/db");
-    engine.rootContext()->setContextProperty("mymodel", &model);
+    engine.rootContext()->setContextProperty("dbModel", &model);
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
 
