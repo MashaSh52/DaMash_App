@@ -39,7 +39,7 @@ struct DataWrapper{
 
 Q_DECLARE_METATYPE(IData*)
 
-QModelIndex transitIndex;
+extern QModelIndex transitIndex;
 
 class ImageProvider : public QAbstractItemModel
 {

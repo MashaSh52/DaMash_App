@@ -7,6 +7,8 @@
 #include <QUrl>
 #include <imageprocessing.h>
 
+QModelIndex transitIndex;
+
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
     Q_UNUSED(parent);
