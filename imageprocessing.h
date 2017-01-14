@@ -9,9 +9,10 @@
  * rotateImage - функция поворота изображения
  * args:
  *  pathToImage - путь к фото
+ *  nameOfNewImg - имя нового изображения
  *  angle - угол поворота в градусах (-360..360) !!! real
  */
-QImage rotateImage(QString pathToImage, qreal angle);
+QUrl rotateImage(QString pathToImage, QString newPath, qreal angle);
 /*
  * cropImage - функция обрезки изображения
  *  QString pathToImage - путь к фото,
@@ -20,14 +21,14 @@ QImage rotateImage(QString pathToImage, qreal angle);
  *  int x2 - абсцисса правого нижнего,
  *  int y2 - ордината правого нижнего
  */
-QImage cropImage(QString pathToImage, int x1, int y1, int x2, int y2);
+QUrl cropImage(QString pathToImage, QString newPath, int x1, int y1, int x2, int y2);
 
 /*
  * makeBlackAndWhiteImage - функция перевода изображения в черно белый вид
  *  QString pathToImage - путь к фото
  **/
 
-QImage makeBlackAndWhiteImage(QString pathToImage);
+QUrl makeBlackAndWhiteImage(QString pathToImage, QString newPath);
 
 bool printPhoto(QString pathToImage);
 

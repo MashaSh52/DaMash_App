@@ -5,9 +5,10 @@
 #include <QRect>
 #include <QPrinter>
 #include <QPrintDialog>
+#include <QUrl>
 
 
-QImage rotateImage(QString pathToImage, qreal angle)
+QUrl rotateImage(QString pathToImage, QString newPath, qreal angle)
 {
     QImage defaultImage(pathToImage);
     QTransform rotating;
@@ -15,18 +16,20 @@ QImage rotateImage(QString pathToImage, qreal angle)
 
     QImage newImage;
     newImage = defaultImage.transformed(rotating);
-    return newImage;
+    newImage.save(newPath);
+    return QUrl::fromLocalFile(newPath);
 }
 
-QImage cropImage(QString pathToImage, int x1, int y1, int x2, int y2)
+QUrl cropImage(QString pathToImage, QString newPath, int x1, int y1, int x2, int y2)
 {
     QRect rect(x1, y1, x2, y2);
     QImage original(pathToImage);
     QImage cropped = original.copy(rect);
-    return cropped;
+    cropped.save(newPath);
+    return QUrl::fromLocalFile(newPath);
 }
 
-QImage makeBlackAndWhiteImage(QString pathToImage)
+QUrl makeBlackAndWhiteImage(QString pathToImage, QString newPath)
 {
     QImage original(pathToImage);
     QImage bw = original;
@@ -42,7 +45,8 @@ QImage makeBlackAndWhiteImage(QString pathToImage)
             bw.setPixel(f1, f2, qRgb(gray, gray, gray));
         }
     }
-    return bw;
+    bw.save(newPath);
+    return QUrl::fromLocalFile(newPath);
 }
 
 /*
