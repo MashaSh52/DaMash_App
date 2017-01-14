@@ -39,6 +39,8 @@ struct DataWrapper{
 
 Q_DECLARE_METATYPE(IData*)
 
+QModelIndex transitIndex;
+
 class ImageProvider : public QAbstractItemModel
 {
     Q_OBJECT
@@ -113,6 +115,8 @@ public:
      *
      * */
     Q_INVOKABLE qint16 whatElementIsIt(QModelIndex currentIndex);
+    Q_INVOKABLE bool setTransitIndex(QModelIndex ind);
+    Q_INVOKABLE QModelIndex getTransitIndex();
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};

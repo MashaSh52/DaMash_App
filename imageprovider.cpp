@@ -379,6 +379,21 @@ qint16 ImageProvider::whatElementIsIt(QModelIndex currentIndex)
     return 0;
 }
 
+bool ImageProvider::setTransitIndex(QModelIndex ind)
+{
+    if (!ind.isValid())
+        return 1;
+    transitIndex = ind;
+    return 0;
+}
+
+QModelIndex ImageProvider::getTransitIndex()
+{
+    if (!transitIndex.isValid())
+        return QModelIndex();
+    return transitIndex;
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
