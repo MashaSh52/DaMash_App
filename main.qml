@@ -65,60 +65,11 @@ ApplicationWindow {
                 radius: 2
             }
         }
-        onClicked: popup.open()//adding1.visible = true
+        onClicked: popup1.open()//adding1.visible = true
 
 
     }
 
-    Popup {
-        id: popup
-        x:root.width/2
-        y:root.height/2
-        width: 300
-        height: 300
-        background: Rectangle { color: "#696969" }
-       // modal: true
-       // focus: true
-        //clip: true
-
-        contentItem : Item {
-
-            ColumnLayout {
-                        spacing: 10
-                        anchors.centerIn: parent
-
-                    TextField {
-                        id: textField1
-                        objectName: "textField1"
-                        placeholderText: qsTr("Enter the Term")
-                        width: 250
-                        textColor: "#696969"
-                    }
-
-                    Button {
-                        id:button2
-                         style: ButtonStyle {
-                             label: Text {
-                                 text: qsTr("Add")
-                                 color: control.pressed ? "#696969" : "#FFFFFF"
-                             }
-                             background: Rectangle {
-                                 color: control.pressed ? "#DCDCDC" : "#696969"
-                                 border.color: "#696969"
-                                 border.width: 0.5
-                                 radius: 2
-                             }
-                         }
-                         onClicked: {
-                             dbModel.addNewTerm(textField1.text);
-                             popup.close()
-                                          }
-                           }
-                    }
-        }
-
-
-    }
 
 
     TreeView {
@@ -138,6 +89,22 @@ ApplicationWindow {
 
     }
 
+
+    Image
+     {
+         id: im
+         x: parent.width/3
+         width: root.width
+         height: parent.height
+         fillMode: Image.PreserveAspectFit
+     }
+
+
+    TableViewColumn{
+    role: "display"
+    width:500 //появляется прокрутка
+        }
+
     MouseArea {
             id: mouseArea
             anchors.fill: parent
@@ -147,7 +114,15 @@ ApplicationWindow {
 
                 {
                             var iRight = parent.indexAt(mouse.x, mouse.y);
-                            if (iRight.valid)  { menuRight.popup() }
+                            if (iRight.valid)  {
+
+                                dbModel.setTransitIndex(iRight);
+                                var j = dbModel.whatElementIsIt(iRight)
+                                if(j === 1) { menu1.popup()}
+                                if(j === 2) { menu2.popup()}
+                                if(j === 3) { menu3.popup()}
+
+                                 }
                 }
                 if (mouse.button === Qt.LeftButton)
                        {
@@ -161,7 +136,7 @@ ApplicationWindow {
 
                            }
                            else
-                           {// parent.isExpanded(ind) ? parent.collapse(ind) : parent.expand(ind);
+                           {
                                if (parent.isExpanded(iLeft))
                                     {
 
@@ -187,37 +162,229 @@ ApplicationWindow {
     }
 
     Menu {
-    id: menuRight
+    id: menu1
     //visible: false
     title: qsTr("Add")
 
     MenuItem {
-        id:addCourse
+        id:courseAdd
         text: qsTr("&Add the Course")
-        onTriggered:  MessageDialog.show(qsTr("Open action triggered"));
+        onTriggered:  popup2.open()
                }
 
     MenuItem {
         text: qsTr("&Delete")
-        onTriggered:  MessageDialog.show(qsTr("Open action triggered"));
+        onTriggered:  dbModel.deleteElement(dbModel.getTransitIndex());
 
              }
     }
 
-    Image
-     {
-         id: im
-         x: parent.width/3
-         width: root.width
-         height: parent.height
-         fillMode: Image.PreserveAspectFit
-     }
+    Menu {
+    id: menu2
+    //visible: false
+    title: qsTr("Add")
+
+    MenuItem {
+        id:imageAdd
+        text: qsTr("&Add the Image")
+        onTriggered:  popup3.open()
+               }
+
+    MenuItem {
+        text: qsTr("&Delete")
+        onTriggered:  dbModel.deleteElement(dbModel.getTransitIndex());
+
+             }
+    }
+
+    Menu {
+    id: menu3
+    //visible: false
+    title: qsTr("Add")
+
+    MenuItem {
+        text: qsTr("&Delete")
+        onTriggered:  dbModel.deleteElement(dbModel.getTransitIndex());
+
+             }
+    }
 
 
-    TableViewColumn{
-    role: "display"
-    width:500 //появляется прокрутка
+// FOR TERM ADDING
+
+    Popup {
+        id: popup1
+        x:root.width/2
+        y:root.height/3.5
+        width: 300
+        height: 300
+        background: Rectangle { color: "#696969" }
+       // modal: true
+       // focus: true
+        //clip: true
+
+        contentItem : Item {
+
+            ColumnLayout {
+                        spacing: 10
+                        anchors.centerIn: parent
+
+                    TextField {
+                        id: textField1
+                        objectName: "textField1"
+                        placeholderText: qsTr("Term")
+                        width: 250
+                        textColor: "#696969"
+                    }
+
+                    Button {
+                        id:button2
+                         style: ButtonStyle {
+                             label: Text {
+                                 text: qsTr("Add")
+                                 color: control.pressed ? "#696969" : "#FFFFFF"
+                             }
+                             background: Rectangle {
+                                 color: control.pressed ? "#DCDCDC" : "#696969"
+                                 border.color: "#696969"
+                                 border.width: 0.5
+                                 radius: 2
+                             }
+                         }
+                         onClicked: {
+                             dbModel.addNewTerm(textField1.text);
+                             popup1.close()
+                                          }
+                           }
+                    }
         }
+
+
+    }
+
+
+
+// FOR COURSE ADDING
+    Popup {
+        id: popup2
+        x:root.width/2
+        y:root.height/3.5
+        width: 300
+        height: 300
+        background: Rectangle { color: "#696969" }
+
+        contentItem : Item {
+
+            ColumnLayout {
+                        spacing: 10
+                        anchors.centerIn: parent
+
+                    TextField {
+                        id: textField2
+                        objectName: "textField2"
+                        placeholderText: qsTr("Course")
+                        width: 250
+                        textColor: "#696969"
+                    }
+
+                    Button {
+                        id:button3
+                         style: ButtonStyle {
+                             label: Text {
+                                 text: qsTr("Add")
+                                 color: control.pressed ? "#696969" : "#FFFFFF"
+                             }
+                             background: Rectangle {
+                                 color: control.pressed ? "#DCDCDC" : "#696969"
+                                 border.color: "#696969"
+                                 border.width: 0.5
+                                 radius: 2
+                             }
+                         }
+                         onClicked: {
+                             dbModel.addNewCourse(dbModel.getTransitIndex(),textField2.text);
+                             popup2.close()
+                                          }
+                           }
+                    }
+        }
+
+
+    }
+
+
+// FOR IMAGE ADDING
+    Popup {
+        id: popup3
+        x:root.width/2
+        y:root.height/3.5
+        width: 800
+        height: 600
+        background: Rectangle { color: "#696969" }
+
+        contentItem : Item {
+
+            ColumnLayout {
+                        spacing: 10
+                        anchors.centerIn: parent
+
+                    TextField {
+                        id: textField3
+                        placeholderText: qsTr("Path to Image")
+                        width: 250
+                        textColor: "#696969"
+                    }
+                    TextField {
+                        id: textField4
+                        placeholderText: qsTr("Comments")
+                        width: 250
+                        textColor: "#696969"
+                    }
+                    TextField {
+                        id: textField5
+                        placeholderText: qsTr("Tags")
+                        width: 250
+                        textColor: "#696969"
+                    }
+
+                    Button {
+                        id:button4
+                         style: ButtonStyle {
+                             label: Text {
+                                 text: qsTr("Add")
+                                 color: control.pressed ? "#696969" : "#FFFFFF"
+                             }
+                             background: Rectangle {
+                                 color: control.pressed ? "#DCDCDC" : "#696969"
+                                 border.color: "#696969"
+                                 border.width: 0.5
+                                 radius: 2
+                             }
+                         }
+                         onClicked: {
+                             dbModel.addNewImage(dbModel.getTransitIndex(), textField3.text, textField4.text, textField5.text)
+                             popup3.close()
+                                          }
+                           }
+                    }
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 }
 
