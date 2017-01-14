@@ -165,7 +165,7 @@ ApplicationWindow {
                                if (parent.isExpanded(iLeft))
                                     {
 
-                                   var children = dbModel.getChildrenIndexesOfItem(ind);
+                                   var children = dbModel.getChildrenIndexesOfItem(iLeft);
                                          for (var i = children.length-1; i >= 0; i--)
                                            {
 
