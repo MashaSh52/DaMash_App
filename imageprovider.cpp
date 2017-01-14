@@ -24,15 +24,29 @@ ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
     if(!database.open()){
         throw std::invalid_argument("Database is not open!");
     }
-
     fetchAll(QModelIndex());
-    //выгружает один слой из БД: семестры/предметы/картинки
 
 }
 
 ImageProvider::~ImageProvider()
 {
     database.close();
+
+    int p = dw.children.size();
+    for(int i = 0; i < p; ++i)
+    {
+        int q = dw.children[i]->children.size();
+        for(int j = 0; j < q; ++j)
+        {
+            int r = dw.children[i]->children[j]->children.size();
+            for(int k = 0; k < r; ++k)
+            {
+                delete dw.children[i]->children[j]->children[k];
+            }
+            delete dw.children[i]->children[j];
+        }
+        delete dw.children[i];
+    }
 }
 
 bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -60,8 +74,6 @@ bool ImageProvider::setData(const QModelIndex &index, const QVariant &value, int
         createNewImage(fatherCourse, data->path, data->comments, data->tags);
     }
     }
-
-    //DataWrapper* tempDW = dataForIndex(index);
     emit dataChanged(index, index);
     return true;
 }
@@ -74,7 +86,7 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
 
     const DataWrapper*ddd =  dataForIndex(index);
 
-    if (role == Qt::DisplayRole) // text view
+    if (role == Qt::DisplayRole)
     {
         if (ddd->type != IMAGE)
         {
@@ -164,6 +176,10 @@ bool ImageProvider::addNewTerm(QString nameOfTerm)
 {
     if(!this->index(0,0,QModelIndex()).isValid())
         return 1;
+
+    if(nameOfTerm == "")
+        return 1;
+
     QModelIndex i = createIndex(0,0, &dw);
 
     for(auto it = dw.children.begin(); it != dw.children.end(); ++it)
@@ -203,6 +219,9 @@ bool ImageProvider::addNewCourse(QModelIndex currentIndex, QString nameOfCourse)
     if(!currentIndex.isValid())
         return 1;
 
+    if(nameOfCourse == "")
+        return 1;
+
     DataWrapper* curTerm = dataForIndex(currentIndex);    
     for(auto it=curTerm->children.begin(); it != curTerm->children.end(); ++it)
     {
@@ -239,6 +258,9 @@ bool ImageProvider::addNewImage(QModelIndex currentIndex, QString path, QString 
 {
 
     if(!currentIndex.isValid())
+        return 1;
+
+    if(path == "")
         return 1;
 
     DataWrapper* curCourse = dataForIndex(currentIndex);   
@@ -459,7 +481,7 @@ QUrl ImageProvider::makeBlackAndWhiteImage(QString pathToImage, QString newPath)
     return QUrl::fromLocalFile(newPath);
 }
 
-bool ImageProvider::printPhoto(QString pathToImage)
+bool ImageProvider::printImage(QString pathToImage)
 {
     QPrinter printer;
     QPrintDialog* dlg = new QPrintDialog(&printer,0);
@@ -475,6 +497,47 @@ bool ImageProvider::printPhoto(QString pathToImage)
     return 0;
 }
 
+QString ImageProvider::getComment(QModelIndex currentIndex)
+{
+    if(!currentIndex.isValid())
+        return "";
+    DataWrapper* data = dataForIndex(currentIndex);
+    if(data->type != IMAGE){
+        HData* insideDataH = (HData*)(data->data);
+        return insideDataH->comments;
+
+    }
+
+    if(data->type == IMAGE)
+    {
+        IData* insideDataI = (IData*)(data->data);
+        return insideDataI->comments;
+    }
+
+    return "";
+}
+
+QString ImageProvider::getTags(QModelIndex currentIndex)
+{
+    if(!currentIndex.isValid())
+        return "";
+    QStringList list;
+    DataWrapper* data = dataForIndex(currentIndex);
+    if(data->type != IMAGE)
+    {
+        HData* insideDataH = (HData*)(data->data);
+        list = insideDataH->tags;
+    }
+    if(data->type == IMAGE)
+    {
+        IData* insideDataI = (IData*)(data->data);
+        list = insideDataI->tags;
+    }
+    if(list.isEmpty())
+        return "";
+    return list.join(", ");
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
@@ -482,7 +545,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     data->children.clear();
     QSqlQuery query;
 
-    if (data->type != COURSE) //Если из первой таблицы
+    if (data->type != COURSE)
     {
         query.prepare("SELECT * FROM relationships WHERE PID = :id ORDER BY NUMBER");
     }
@@ -497,7 +560,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     beginInsertRows(parent,0,data->count-1);
     while(query.next())
     {
-        auto id = query.value("id").toUInt(); //работать, скорее всего, не будет, потому что могут быть проблемы с версиями qt
+        auto id = query.value("id").toUInt();
         auto comment = query.value("comment").toString();
         QStringList tags = query.value("tags").toStringList();
         int number;
@@ -543,7 +606,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
 
 const DataWrapper *ImageProvider::dataForIndex(const QModelIndex &index) const
 {
-    if(!index.isValid()) //в корне
+    if(!index.isValid())
         return &dw;
 
     return static_cast<DataWrapper*> (index.internalPointer());
@@ -690,18 +753,6 @@ bool ImageProvider::createNewImage(QModelIndex &parent, const QString path, cons
     newImg->number = num + 1;
     return 0;
 }
-
-/*bool ImageProvider::deleteAllChildren(QModelIndex currentIndex)
-{
-    QVariantList listOfChildren = getChildrenIndexesOfItem(currentIndex);
-    for(int i = 0; it != listOfChildren.end(); ++it)
-    {
-        delete (*it);
-    }
-    return 0;
-
-
-}*/
 
 bool ImageProvider::createNewTerm(QString nameOfTerm)
 {

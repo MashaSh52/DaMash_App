@@ -70,7 +70,7 @@ public:
     */
     Q_INVOKABLE bool addNewTerm(QString nameOfTerm);
     /*
-     * addNewCourse - функция добавления нового семестра
+     * addNewCourse - функция добавления нового курса
      *
      * args:
      *  QModelIndex currentIndex - индекс узла, на котором произошел клик (TERM),
@@ -79,7 +79,7 @@ public:
     */
     Q_INVOKABLE bool addNewCourse(QModelIndex currentIndex, QString nameOfCourse);
     /*
-     * addNewImage - функция добавления нового семестра
+     * addNewImage - функция добавления нового фото
      *
      * args:
      *  QModelIndex currentIndex - индекс узла, на котором произошел клик (COURSE)
@@ -117,15 +117,41 @@ public:
     Q_INVOKABLE qint16 whatElementIsIt(QModelIndex currentIndex);
     Q_INVOKABLE bool setTransitIndex(QModelIndex ind);
     Q_INVOKABLE QModelIndex getTransitIndex();
+    /*
+     * rotateImage - функция поворота изображения
+     * QString pathToImage - путь к изображению,
+     * QString newPath - путь для сохранения измененного изображения,
+     * qreal angle - угол поворота в градусах
+     * */
     Q_INVOKABLE QUrl rotateImage(QString pathToImage, QString newPath, qreal angle);
+    /*
+     * cropImage - функция обрезки изображения
+     * QString pathToImage - путь к изображению,
+     * QString newPath - путь для сохранения измененного изображения,
+     * int x1, int y1 - координаты левого верхнего угла вырезаемого прямоугольника,
+     * int x2, int y2 - координаты правого нижнего угла
+     * */
     Q_INVOKABLE QUrl cropImage(QString pathToImage, QString newPath, int x1, int y1, int x2, int y2);
+    /*
+     * makeBlackAndWhiteImage - функция перевода изображния в черно-белый формат
+     * QString pathToImage - путь к изображению,
+     * QString newPath - путь для сохранения измененного изображения
+     * */
     Q_INVOKABLE QUrl makeBlackAndWhiteImage(QString pathToImage, QString newPath);
-    Q_INVOKABLE bool printPhoto(QString pathToImage);
+    /*
+     * printImage - функция печати изображения
+     * QString pathToImage - путь к изображению
+     * */
+    Q_INVOKABLE bool printImage(QString pathToImage);
+
+    // Получить комментарии, соотвествующие текущему элементу
+    Q_INVOKABLE QString getComment(QModelIndex currentIndex);
+    // Получить теги, соответствующие текущему элементу
+    Q_INVOKABLE QString getTags(QModelIndex currentIndex);
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};
 
-    //Забирает все элементы данного уровня - всех потомков
     void fetchAll(const QModelIndex &parent);
     const DataWrapper* dataForIndex(const QModelIndex &index) const;
     DataWrapper* dataForIndex(const QModelIndex &index);
