@@ -14,6 +14,7 @@ import QtQuick.Controls.Material 2.0
 
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.0
+import QtWebKit 3.0
 
 
 ApplicationWindow {
@@ -21,8 +22,7 @@ ApplicationWindow {
     width: 860
     height: 600
     visible: true
-    color: "#F5F5F5"
-
+    style: ApplicationWindowStyle { background: Rectangle {color: "#FFFFFF"}}
     title: qsTr("LECTIONS")
 
     Button
@@ -33,21 +33,23 @@ ApplicationWindow {
         style: ButtonStyle {
             label: Text {
                 text: qsTr("Add New Term")
-                color: control.pressed ? "#696969" : "#FFFFFF"
+                color: control.pressed ? "black" : "#696969"
+                font.bold: true
             }
             background: Rectangle {
                 implicitWidth: 100
                 implicitHeight: 25
-                color: control.pressed ? "#DCDCDC" : "#696969"
-                border.color: "#000000"
-                border.width: 1
-                radius: 3
+                color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                border.width: 3
             }
         }
+
         onClicked: popup1.open()//adding1.visible = true
 
 
     }
+
 
     TreeView {
     id: treeView
@@ -60,9 +62,12 @@ ApplicationWindow {
     model: dbModel
 
     style: TreeViewStyle {
-              alternateBackgroundColor : "#696969" // vipadaet
-              backgroundColor : "#696969" // osnovnoi
-              textColor: "#FFFFFF"
+
+              activateItemOnSingleClick : true
+              alternateBackgroundColor : "#FFFFFF" // vipadaet
+              backgroundColor : "#FFFFFF" // osnovnoi
+              textColor:"#696969"
+              highlightedTextColor :"#D3D3D3"
 
     }
 
@@ -71,10 +76,55 @@ ApplicationWindow {
      {
          id: im
          x: parent.width/3
+        // anchors.fill: root
          width: root.width
          height: parent.height
          fillMode: Image.PreserveAspectFit
+         MouseArea {
+                 id: imMouseArea
+                 anchors.fill: parent
+                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+                 onClicked: {
+                     if(mouse.button === Qt.RightButton)
+
+                     {
+                         menuFullScreen.popup()
+
+                      }
+                 }
+         }
      }
+
+// MENU FOR IMAGE
+
+    Menu {
+    id: menuFullScreen
+     title: qsTr("Open")
+
+    MenuItem {
+        text: qsTr("&Full Screen")
+        onTriggered:  {
+                        var component = Qt.createComponent("Child.qml")
+                        var window    = component.createObject(root)
+                        window.show()
+}
+
+             }
+    MenuItem {
+        text: qsTr("&Add Comment")
+        onTriggered:  fullScreen.open();
+
+             }
+    MenuItem {
+        text: qsTr("&Add Tag")
+        onTriggered:  Window.FullScreen//fullScreen.open();
+
+             }
+    }
+
+
+
+
 
 
     TableViewColumn{
@@ -113,6 +163,7 @@ ApplicationWindow {
                                dbModel.setTransitIndex(iLeft);
                                printButton.visible = true
                                imProcButton.visible = true
+                             //  if (parent.isExpanded(iLeft)) { parent.expand(iLeft); }
 
                            }
                            else
@@ -198,10 +249,7 @@ ApplicationWindow {
         y:root.height/3.5
         width: 300
         height: 300
-        background: Rectangle { color: "#696969" }
-       // modal: true
-       // focus: true
-        //clip: true
+
 
         contentItem : Item {
 
@@ -219,18 +267,20 @@ ApplicationWindow {
 
                     Button {
                         id:button2
-                         style: ButtonStyle {
-                             label: Text {
-                                 text: qsTr("Add")
-                                 color: control.pressed ? "#696969" : "#FFFFFF"
-                             }
-                             background: Rectangle {
-                                 color: control.pressed ? "#DCDCDC" : "#696969"
-                                 border.color: "#696969"
-                                 border.width: 0.5
-                                 radius: 2
-                             }
-                         }
+                        style: ButtonStyle {
+                            label: Text {
+                                text: qsTr("Add")
+                                color: control.pressed ? "black" : "#696969"
+                                font.bold: true
+                            }
+                            background: Rectangle {
+                                implicitWidth: 100
+                                implicitHeight: 25
+                                color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                                border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                                border.width: 3
+                            }
+                        }
                          onClicked: {
                              dbModel.addNewTerm(textField1.text);
                              popup1.close()
@@ -251,7 +301,6 @@ ApplicationWindow {
         y:root.height/3.5
         width: 300
         height: 300
-        background: Rectangle { color: "#696969" }
 
         contentItem : Item {
 
@@ -269,18 +318,20 @@ ApplicationWindow {
 
                     Button {
                         id:button3
-                         style: ButtonStyle {
-                             label: Text {
-                                 text: qsTr("Add")
-                                 color: control.pressed ? "#696969" : "#FFFFFF"
-                             }
-                             background: Rectangle {
-                                 color: control.pressed ? "#DCDCDC" : "#696969"
-                                 border.color: "#696969"
-                                 border.width: 0.5
-                                 radius: 2
-                             }
-                         }
+                        style: ButtonStyle {
+                            label: Text {
+                                text: qsTr("Add")
+                                color: control.pressed ? "black" : "#696969"
+                                font.bold: true
+                            }
+                            background: Rectangle {
+                                implicitWidth: 100
+                                implicitHeight: 25
+                                color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                                border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                                border.width: 3
+                            }
+                        }
                          onClicked: {
                              dbModel.addNewCourse(dbModel.getTransitIndex(),textField2.text);
                              popup2.close()
@@ -300,7 +351,6 @@ ApplicationWindow {
         y:root.height/3.5
         width: 800
         height: 600
-        background: Rectangle { color: "#696969" }
 
         contentItem : Item {
 
@@ -329,18 +379,20 @@ ApplicationWindow {
 
                     Button {
                         id:button4
-                         style: ButtonStyle {
-                             label: Text {
-                                 text: qsTr("Add")
-                                 color: control.pressed ? "#696969" : "#FFFFFF"
-                             }
-                             background: Rectangle {
-                                 color: control.pressed ? "#DCDCDC" : "#696969"
-                                 border.color: "#696969"
-                                 border.width: 0.5
-                                 radius: 2
-                             }
-                         }
+                        style: ButtonStyle {
+                            label: Text {
+                                text: qsTr("Add")
+                                color: control.pressed ? "black" : "#696969"
+                                font.bold: true
+                            }
+                            background: Rectangle {
+                                implicitWidth: 100
+                                implicitHeight: 25
+                                color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                                border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                                border.width: 3
+                            }
+                        }
                          onClicked: {
                              dbModel.addNewImage(dbModel.getTransitIndex(), textField3.text, textField4.text, textField5.text)
                              popup3.close()
@@ -353,29 +405,30 @@ ApplicationWindow {
 
 
     GridLayout {
-        rowSpacing: 2
+        columnSpacing: 2
         y: 3
-        x: parent.width - 110
+        x: parent.width - 210
 
 // PRINT BUTTON
     Button
     {
        id:printButton
        visible: false
-        style: ButtonStyle {
-            label: Text {
-                text: qsTr("Print")
-                color: control.pressed ? "#696969" : "#FFFFFF"
-            }
-            background: Rectangle {
-                implicitWidth: 100
-                implicitHeight: 25
-                color: control.pressed ? "#DCDCDC" : "#696969"
-                border.color: "#000000"
-                border.width: 1
-                radius: 3
-            }
-        }
+       Layout.column:1
+       style: ButtonStyle {
+           label: Text {
+               text: qsTr("Print")
+               color: control.pressed ? "black" : "#696969"
+               font.bold: true
+           }
+           background: Rectangle {
+               implicitWidth: 100
+               implicitHeight: 25
+               color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+               border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+               border.width: 3
+           }
+       }
         onClicked: popup_print.open() // + printFunction
     }
 
@@ -384,21 +437,20 @@ ApplicationWindow {
     {
        id:imProcButton
        visible: false
-        Layout.row: 1
-        style: ButtonStyle {
-            label: Text {
-                text: qsTr("Processing")
-                color: control.pressed ? "#696969" : "#FFFFFF"
-            }
-            background: Rectangle {
-                implicitWidth: 100
-                implicitHeight: 25
-                color: control.pressed ? "#DCDCDC" : "#696969"
-                border.color: "#000000"
-                border.width: 1
-                radius: 3
-            }
-        }
+       style: ButtonStyle {
+           label: Text {
+               text: qsTr("Processing")
+               color: control.pressed ? "black" : "#696969"
+               font.bold: true
+           }
+           background: Rectangle {
+               implicitWidth: 100
+               implicitHeight: 25
+               color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+               border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+               border.width: 3
+           }
+       }
         onClicked: popup_filters.open()
 
 
@@ -415,44 +467,45 @@ ApplicationWindow {
         y:root.height/4
         width: 200
         height: 100
-        background: Rectangle { color: "#696969" }
         Label {
                     text: qsTr("Printing. Please,wait...")
+                    color: "#696969"
                 }
 
     }
 
 
 
-// IMAGE PROCESSING CheckBox
+// IMAGE PROCESSING
 
     Popup {
         id: popup_filters
         x:root.width/2
         y:root.height/4
         visible: false
-        background: Rectangle { color: "#696969" }
+
         ColumnLayout{
         Label {
-                    text: qsTr("Type of processing")
+                    text: qsTr("TYPE OF PROCESSING")
+                    color: "#696969"
                 }
         Button {
             id: rotate_button
           //  text: qsTr("Rotate")
             style: ButtonStyle {
-                       label: Text {
-                           text: qsTr("Rotate")
-                           color: control.pressed ? "#696969" : "#FFFFFF"
-                       }
-                       background: Rectangle {
-                           implicitWidth: 100
-                           implicitHeight: 25
-                           color: control.pressed ? "#DCDCDC" : "#696969"
-                           border.color: "#000000"
-                           border.width: 1
-                           radius: 3
-                       }
-                   }
+                label: Text {
+                    text: qsTr("Rotate")
+                    color: control.pressed ? "black" : "#696969"
+                    font.bold: true
+                }
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                    border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                    border.width: 3
+                }
+            }
             onClicked: { popup_rotate.open()
                 popup_filters.close()
             }
@@ -464,15 +517,15 @@ ApplicationWindow {
             style: ButtonStyle {
                 label: Text {
                     text: qsTr("Crop")
-                    color: control.pressed ? "#696969" : "#FFFFFF"
+                    color: control.pressed ? "black" : "#696969"
+                    font.bold: true
                 }
                 background: Rectangle {
                     implicitWidth: 100
                     implicitHeight: 25
-                    color: control.pressed ? "#DCDCDC" : "#696969"
-                    border.color: "#000000"
-                    border.width: 1
-                    radius: 3
+                    color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                    border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                    border.width: 3
                 }
             }
             onClicked: {
@@ -486,18 +539,18 @@ ApplicationWindow {
             style: ButtonStyle {
                 label: Text {
                     text: qsTr("Black and White")
-                    color: control.pressed ? "#696969" : "#FFFFFF"
+                    color: control.pressed ? "black" : "#696969"
+                    font.bold: true
                 }
                 background: Rectangle {
                     implicitWidth: 100
                     implicitHeight: 25
-                    color: control.pressed ? "#DCDCDC" : "#696969"
-                    border.color: "#000000"
-                    border.width: 1
-                    radius: 3
+                    color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                    border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                    border.width: 3
                 }
             }
-            onClicked:  { new_im.source = dbModel.makeBlackAndWhiteImage(dbModel.getTransitIndex());
+            onClicked:  { im.source = dbModel.makeBlackAndWhiteImage(im.source.toString().slice(7),"/home/skt/NewImages/im_baw.jpg");
 
                 popup_filters.close();}
         }
@@ -505,15 +558,6 @@ ApplicationWindow {
     }
 }
 
-// SHOW THE PROCESSED IMAGE
-    Image
-     {
-         id: new_im
-         x: parent.width/3
-         width: root.width
-         height: parent.height
-         fillMode: Image.PreserveAspectFit
-     }
 
 // ROTATION
     Popup {
@@ -521,7 +565,6 @@ ApplicationWindow {
         x:root.width/2
         y:root.height/4
         visible: false
-        background: Rectangle { color: "#696969" }
 
         ColumnLayout{
 
@@ -530,6 +573,7 @@ ApplicationWindow {
 
         Label {
                     text: qsTr("PARAMETER")
+                    color: "#696969"
                 }
 
         TextField {
@@ -541,20 +585,22 @@ ApplicationWindow {
 
         Button {
             id:button_close_1
-             style: ButtonStyle {
-                 label: Text {
-                     text: qsTr("Rotate")
-                     color: control.pressed ? "#696969" : "#FFFFFF"
-                 }
-                 background: Rectangle {
-                     color: control.pressed ? "#DCDCDC" : "#696969"
-                     border.color: "#000000"
-                     border.width: 0.5
-                     radius: 2
-                 }
-             }
+            style: ButtonStyle {
+                label: Text {
+                    text: qsTr("Rotate")
+                    color: control.pressed ? "black" : "#696969"
+                    font.bold: true
+                }
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                    border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                    border.width: 3
+                }
+            }
              onClicked: {
-                 new_im.source = dbModel.rotateImage(dbModel.getTransitIndex(), angle);
+                 im.source = dbModel.rotateImage(im.source.toString().slice(7),"/home/skt/NewImages/im_rotate.jpg", angle.text);
                  popup_rotate.close()
                               }
                }
@@ -567,10 +613,11 @@ ApplicationWindow {
         x:root.width/2
         y:root.height/4
         visible: false
-        background: Rectangle { color: "#696969" }
+
         ColumnLayout{
         Label {
                     text: qsTr("PARAMETERS")
+                    color: "#696969"
                 }
         TextField {
             id: x1
@@ -598,38 +645,33 @@ ApplicationWindow {
         }
         Button {
             id:button_close_2
-             style: ButtonStyle {
-                 label: Text {
-                     text: qsTr("Crop")
-                     color: control.pressed ? "#696969" : "#FFFFFF"
-                 }
-                 background: Rectangle {
-                     color: control.pressed ? "#DCDCDC" : "#696969"
-                     border.color: "#000000"
-                     border.width: 0.5
-                     radius: 2
-                 }
-             }
+            style: ButtonStyle {
+                label: Text {
+                    text: qsTr("Crop")
+                    color: control.pressed ? "black" : "#696969"
+                    font.bold: true
+                }
+                background: Rectangle {
+                    implicitWidth: 100
+                    implicitHeight: 25
+                    color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                    border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                    border.width: 3
+                }
+            }
              onClicked: {
-                 new_im.source = dbModel.cropImage(dbModel.getTransitIndex(),x1, y1, x2, y2);
+                 im.source = dbModel.cropImage(im.source.toString().slice(7),"/home/skt/NewImages/im_rotate.jpg",x1, y1, x2, y2);
+
+
                  popup_crop.close()
                               }
                }
 
         }
     }
-  /*  ButtonStyle {
-        id: button_style
-                background: Rectangle {
-                    implicitWidth: 100
-                    implicitHeight: 25
-                    color: control.pressed ? "#DCDCDC" : "#696969"
-                    border.color: "#000000"
-                    border.width: 1
-                    radius: 3
-                }
-            }
-*/
+
+
+
 
 }
 
