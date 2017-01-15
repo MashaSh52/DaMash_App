@@ -148,6 +148,11 @@ public:
     Q_INVOKABLE QString getComment(QModelIndex currentIndex);
     // Получить теги, соответствующие текущему элементу
     Q_INVOKABLE QString getTags(QModelIndex currentIndex);
+
+    // Задать комментарий для элемента
+    Q_INVOKABLE bool setComment(QModelIndex currentIndex, QString comment);
+    // Задать теги для элемента
+    Q_INVOKABLE bool setTags(QModelIndex currentIndex, QString tags);
 private:
     QSqlDatabase database;
     DataWrapper dw {0, ROOT, nullptr, 0, nullptr, {}, -1};

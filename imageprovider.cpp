@@ -538,6 +538,56 @@ QString ImageProvider::getTags(QModelIndex currentIndex)
     return list.join(", ");
 }
 
+bool ImageProvider::setComment(QModelIndex currentIndex, QString comment)
+{
+    if(!currentIndex.isValid() || comment == "")
+        return 1;
+
+    DataWrapper* data = dataForIndex(currentIndex);
+    QSqlQuery queryForUpdate;
+    if(data->type == TERM || data->type == COURSE)
+    {
+        queryForUpdate.prepare("UPDATE RELATIONSHIPS SET COMMENT = :COM WHERE ID = :ID");
+        queryForUpdate.bindValue(":COM", comment);
+        queryForUpdate.bindValue(":ID", data->id);
+        HData* insData = (HData*)data->data;
+        insData->comments = comment;
+        return 0;
+
+    }
+    if(data->type == IMAGE)
+    {
+        queryForUpdate.prepare("UPDATE IMAGES SET COMMENT = :COM WHERE ID = :ID");
+        queryForUpdate.bindValue(":COM", comment);
+        queryForUpdate.bindValue(":ID", data->id);
+        IData* insData = (IData*)data->data;
+        insData->comments = comment;
+        return 0;
+
+    }
+    return 1;
+}
+
+bool ImageProvider::setTags(QModelIndex currentIndex, QString tags)
+{
+    if(!currentIndex.isValid() || tags == "")
+        return 1;
+
+    DataWrapper* data = dataForIndex(currentIndex);
+    QSqlQuery queryForUpdate;
+    if(data->type == IMAGE)
+    {
+        queryForUpdate.prepare("UPDATE IMAGES SET TAGS = :t WHERE ID = :ID");
+        queryForUpdate.bindValue(":t", tags);
+        queryForUpdate.bindValue(":ID", data->id);
+        IData* insData = (IData*)data->data;
+        insData->tags = tags.split(",");
+        return 0;
+
+    }
+    return 1;
+}
+
 
 void ImageProvider::fetchAll(const QModelIndex &parent)
 {
@@ -560,7 +610,7 @@ void ImageProvider::fetchAll(const QModelIndex &parent)
     beginInsertRows(parent,0,data->count-1);
     while(query.next())
     {
-        auto id = query.value("id").toUInt();
+        qint16 id = query.value("id").toUInt();
         auto comment = query.value("comment").toString();
         QStringList tags = query.value("tags").toStringList();
         int number;
