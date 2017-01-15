@@ -90,8 +90,8 @@ QVariant ImageProvider::data(const QModelIndex &index, int role) const
     {
         if (ddd->type != IMAGE)
         {
-           HData* temp = (HData* )ddd->data;
-           return temp->name;
+            HData* temp = (HData* )ddd->data;
+            return temp->name;
         }
         else return ddd->number;
     }
@@ -222,7 +222,7 @@ bool ImageProvider::addNewCourse(QModelIndex currentIndex, QString nameOfCourse)
     if(nameOfCourse == "")
         return 1;
 
-    DataWrapper* curTerm = dataForIndex(currentIndex);    
+    DataWrapper* curTerm = dataForIndex(currentIndex);
     for(auto it=curTerm->children.begin(); it != curTerm->children.end(); ++it)
     {
         HData* insideData = (HData*)(*it)->data;
@@ -263,7 +263,7 @@ bool ImageProvider::addNewImage(QModelIndex currentIndex, QString path, QString 
     if(path == "")
         return 1;
 
-    DataWrapper* curCourse = dataForIndex(currentIndex);   
+    DataWrapper* curCourse = dataForIndex(currentIndex);
     for(auto it=curCourse->children.begin(); it != curCourse->children.end(); ++it)
     {
         IData* insideData = (IData*)(*it)->data;
@@ -374,7 +374,7 @@ bool ImageProvider::deleteElement(QModelIndex currentIndex)
     queryForDelete.exec();
 
     parentData->children.removeAt(row);
-        parentData->count--;
+    parentData->count--;
     endRemoveRows();
 
     endResetModel();
@@ -463,11 +463,17 @@ QUrl ImageProvider::cropImage(QString pathToImage, QString newPath, int x1, int 
 
 QUrl ImageProvider::makeBlackAndWhiteImage(QString pathToImage, QString newPath)
 {
-    QImage original(pathToImage);
-    QImage bw = original;
-    QSize sizeImage = original.size();
-    int width = sizeImage.width(), height = sizeImage.height();
+    QImage bw(pathToImage);
+    int tab[] = { 14, 10, 8, 6, 5, 5, 4, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2 };
+    int radius = 20;
+    int alpha = (radius < 1) ? 16 : (radius > 17) ? 1 : tab[radius-1];
+    bool alphaOnly = false;
 
+    bw = bw.convertToFormat(QImage::Format_ARGB32_Premultiplied);
+    //make black & white
+
+    QSize sizeImage = bw.size();
+    int width = sizeImage.width(), height = sizeImage.height();
     QRgb color;
 
     for (int f1=0; f1<width; f1++) {
@@ -477,7 +483,82 @@ QUrl ImageProvider::makeBlackAndWhiteImage(QString pathToImage, QString newPath)
             bw.setPixel(f1, f2, qRgb(gray, gray, gray));
         }
     }
-    bw.save(newPath);
+
+    QImage result = bw;
+    QRect rect(0,0, bw.width(), bw.height());
+    int r1 = rect.top();
+    int r2 = rect.bottom();
+    int c1 = rect.left();
+    int c2 = rect.right();
+
+    int bpl = result.bytesPerLine();
+    int rgba[4];
+    unsigned char* p;
+
+    int i1 = 0;
+    int i2 = 3;
+
+    if (alphaOnly)
+        i1 = i2 = (QSysInfo::ByteOrder == QSysInfo::BigEndian ? 0 : 3);
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r1) + col * 4;
+        for (int i = i1; i <= i2; i++)
+            rgba[i] = p[i] << 4;
+
+        p += bpl;
+        for (int j = r1; j < r2; j++, p += bpl)
+            for (int i = i1; i <= i2; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c1 * 4;
+        for (int i = i1; i <= i2; i++)
+            rgba[i] = p[i] << 4;
+
+        p += 4;
+        for (int j = c1; j < c2; j++, p += 4)
+            for (int i = i1; i <= i2; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int col = c1; col <= c2; col++) {
+        p = result.scanLine(r2) + col * 4;
+        for (int i = i1; i <= i2; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= bpl;
+        for (int j = r1; j < r2; j++, p -= bpl)
+            for (int i = i1; i <= i2; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+
+    for (int row = r1; row <= r2; row++) {
+        p = result.scanLine(row) + c2 * 4;
+        for (int i = i1; i <= i2; i++)
+            rgba[i] = p[i] << 4;
+
+        p -= 4;
+        for (int j = c1; j < c2; j++, p -= 4)
+            for (int i = i1; i <= i2; i++)
+                p[i] = (rgba[i] += ((p[i] << 4) - rgba[i]) * alpha / 16) >> 4;
+    }
+    for (int f1=0; f1<width; f1++) {
+        for (int f2=0; f2<height; f2++) {
+            double red1 = bw.pixelColor(f1,f2).red();
+            double green1 = bw.pixelColor(f1,f2).green();
+            double blue1 = bw.pixelColor(f1,f2).blue();
+
+            double red2 = result.pixelColor(f1,f2).red();
+            double green2 = result.pixelColor(f1,f2).green();
+            double blue2 = result.pixelColor(f1,f2).blue();
+
+            result.setPixel(f1,f2, qRgb(qMin(red1/red2*255,255.0), qMin(green1/green2*255,255.0), qMin(blue1/blue2*255,255.0)));
+        }
+    }
+
+    result.save(newPath);
     return QUrl::fromLocalFile(newPath);
 }
 
@@ -487,11 +568,11 @@ bool ImageProvider::printImage(QString pathToImage)
     QPrintDialog* dlg = new QPrintDialog(&printer,0);
 
     if(dlg->exec() == QDialog::Accepted) {
-                    QImage img(pathToImage);
-                    QPainter painter(&printer);
-                    painter.drawImage(QPoint(0,0),img);
-                    painter.end();
-            }
+        QImage img(pathToImage);
+        QPainter painter(&printer);
+        painter.drawImage(QPoint(0,0),img);
+        painter.end();
+    }
 
     delete dlg;
     return 0;

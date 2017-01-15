@@ -2,8 +2,6 @@
 #include <QQmlApplicationEngine>
 #include "imageprovider.h"
 #include <QQmlContext>
-//#include <QApplication>
-//#include <QTreeView>
 
 
 int main(int argc, char *argv[])
