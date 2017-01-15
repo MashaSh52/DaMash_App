@@ -15,6 +15,7 @@
 #include <QPrintDialog>
 
 QModelIndex transitIndex;
+QUrl transitQUrl;
 
 ImageProvider::ImageProvider(QString nameOfDB, QObject *parent)
 {
@@ -438,6 +439,16 @@ QModelIndex ImageProvider::getTransitIndex()
     if (!transitIndex.isValid())
         return QModelIndex();
     return transitIndex;
+}
+
+bool ImageProvider::setTransitURL(QUrl url)
+{
+    transitQUrl = url;
+}
+
+QUrl ImageProvider::getTransitURL()
+{
+    return transitQUrl;
 }
 
 QUrl ImageProvider::rotateImage(QString pathToImage, QString newPath, qreal angle)

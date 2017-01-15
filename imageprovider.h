@@ -40,7 +40,7 @@ struct DataWrapper{
 Q_DECLARE_METATYPE(IData*)
 
 extern QModelIndex transitIndex;
-
+extern QUrl transitURL;
 class ImageProvider : public QAbstractItemModel
 {
     Q_OBJECT
@@ -117,6 +117,8 @@ public:
     Q_INVOKABLE qint16 whatElementIsIt(QModelIndex currentIndex);
     Q_INVOKABLE bool setTransitIndex(QModelIndex ind);
     Q_INVOKABLE QModelIndex getTransitIndex();
+    Q_INVOKABLE bool setTransitURL(QUrl url);
+    Q_INVOKABLE QUrl getTransitURL();
     /*
      * rotateImage - функция поворота изображения
      * QString pathToImage - путь к изображению,
