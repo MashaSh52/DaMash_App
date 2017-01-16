@@ -40,7 +40,7 @@ ApplicationWindow {
          anchors.fill: parent
          width: parent.width
          height: parent.height
-         source: dbModel.data(dbModel.getTransitIndex(),1)
+         source: dbModel.getTransitURL()
          fillMode: Image.PreserveAspectFit
      }
 

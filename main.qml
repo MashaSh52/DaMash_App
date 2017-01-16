@@ -1,4 +1,4 @@
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Controls 1.4
 import QtQuick.Controls 2.0
 import QtQuick.Layouts 1.0
@@ -7,11 +7,7 @@ import QtQuick.Controls.Styles 1.4
 import QtQuick.Particles 2.0
 import QtQml.Models 2.2
 import QtQuick.Dialogs 1.2
-
 import QtQuick.Controls.Material 2.0
-//import QtQuick 2.6
-//import QtQuick.Controls 2.1
-
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.0
 import QtWebKit 3.0
@@ -21,6 +17,8 @@ ApplicationWindow {
     id: root
     width: 860
     height: 600
+    minimumWidth: 800
+    minimumHeight: 500
     visible: true
     style: ApplicationWindowStyle { background: Rectangle {color: "#FFFFFF"}}
     title: qsTr("LECTIONS")
@@ -45,27 +43,25 @@ ApplicationWindow {
             }
         }
 
-        onClicked: popup1.open()//adding1.visible = true
+        onClicked: popup1.open()
 
 
     }
 
-
-    TreeView {
+TreeView {
     id: treeView
-    //backgroundVisible : false
     x: 5
     y: 36
     headerVisible : false
-    width: parent.width/3.5 //ширина
-    height: parent.height - 60
+    width: parent.width/3.5
+    height: parent.height - 100
     model: dbModel
 
     style: TreeViewStyle {
 
               activateItemOnSingleClick : true
-              alternateBackgroundColor : "#FFFFFF" // vipadaet
-              backgroundColor : "#FFFFFF" // osnovnoi
+              alternateBackgroundColor : "#FFFFFF"
+              backgroundColor : "#FFFFFF"
               textColor:"#696969"
               highlightedTextColor :"#D3D3D3"
 
@@ -75,9 +71,8 @@ ApplicationWindow {
     Image
      {
          id: im
-         x: parent.width/3
-        // anchors.fill: root
-         width: root.width
+         x: 4*parent.width/3
+         width: root.width/2
          height: parent.height
          fillMode: Image.PreserveAspectFit
          MouseArea {
@@ -91,9 +86,10 @@ ApplicationWindow {
                          menuFullScreen.popup()
 
                       }
-                 }
          }
-     }
+}
+}
+
 
 // MENU FOR IMAGE
 
@@ -104,6 +100,7 @@ ApplicationWindow {
     MenuItem {
         text: qsTr("&Full Screen")
         onTriggered:  {
+
                         var component = Qt.createComponent("Child.qml")
                         var window    = component.createObject(root)
                         window.show()
@@ -112,19 +109,15 @@ ApplicationWindow {
              }
     MenuItem {
         text: qsTr("&Add Comment")
-        onTriggered:  fullScreen.open();
+        onTriggered:  popup_Comment.open()
 
              }
     MenuItem {
         text: qsTr("&Add Tag")
-        onTriggered:  Window.FullScreen//fullScreen.open();
+        onTriggered:  popup_Tags.open()
 
              }
     }
-
-
-
-
 
 
     TableViewColumn{
@@ -160,10 +153,14 @@ ApplicationWindow {
                            if(dbModel.data(iLeft,1))
                            {
                                im.source = dbModel.data(iLeft,1);
+                               dbModel.setTransitURL(im.source);
                                dbModel.setTransitIndex(iLeft);
+
+                              // appears all buttons connected with the Image
                                printButton.visible = true
                                imProcButton.visible = true
-                             //  if (parent.isExpanded(iLeft)) { parent.expand(iLeft); }
+                               setComm.visible = true
+                               setTag.visible = true
 
                            }
                            else
@@ -180,7 +177,6 @@ ApplicationWindow {
                                                 parent.collapse(children[i])
                                               }
                                      }
-                                  // parent.collapse(iLeft)
                                }
                                else { parent.expand(iLeft); }
                            }
@@ -194,7 +190,6 @@ ApplicationWindow {
 
     Menu {
     id: menu1
-    //visible: false
     title: qsTr("Add")
 
     MenuItem {
@@ -212,7 +207,6 @@ ApplicationWindow {
 
     Menu {
     id: menu2
-    //visible: false
     title: qsTr("Add")
 
     MenuItem {
@@ -282,7 +276,10 @@ ApplicationWindow {
                             }
                         }
                          onClicked: {
-                             dbModel.addNewTerm(textField1.text);
+                             if(dbModel.addNewTerm(textField1.text))
+                              {
+                                popup_error.open()
+                              }
                              popup1.close()
                                           }
                            }
@@ -291,6 +288,44 @@ ApplicationWindow {
 
 
     }
+
+// ERROR MESSAGE
+    Popup {
+        id: popup_error
+        x:root.width/2
+        y:root.height/4
+        width: 200
+        height: 100
+
+        ColumnLayout {
+        Label {
+                    text: qsTr("Error!The parameter is entered or already exist!")
+                    color: "red"
+                }
+        Button
+        {
+           id:sadOk
+           Layout.column:4
+           style: ButtonStyle {
+               label: Text {
+                   text: qsTr("   OK  =(    ")
+                   color: control.pressed ? "black" : "#696969"
+                   font.bold: true
+               }
+               background: Rectangle {
+                   implicitWidth: 100
+                   implicitHeight: 25
+                   color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                   border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                   border.width: 3
+               }
+           }
+            onClicked: popup_error.close()
+        }
+}
+
+    }
+
 
 
 
@@ -332,8 +367,13 @@ ApplicationWindow {
                                 border.width: 3
                             }
                         }
+
                          onClicked: {
-                             dbModel.addNewCourse(dbModel.getTransitIndex(),textField2.text);
+                             if(dbModel.addNewCourse(dbModel.getTransitIndex(),textField2.text))
+                              {
+
+                                 popup_error.open()
+                              }
                              popup2.close()
                                           }
                            }
@@ -394,10 +434,15 @@ ApplicationWindow {
                             }
                         }
                          onClicked: {
-                             dbModel.addNewImage(dbModel.getTransitIndex(), textField3.text, textField4.text, textField5.text)
+                             if(dbModel.addNewImage(dbModel.getTransitIndex(), textField3.text, textField4.text, textField5.text))
+                             {
+                                   popup_error.open()
+                             }
+
                              popup3.close()
                                           }
                            }
+
                     }
         }
     }
@@ -405,9 +450,9 @@ ApplicationWindow {
 
 
     GridLayout {
-        columnSpacing: 2
+        columnSpacing: 4
         y: 3
-        x: parent.width - 210
+        x: parent.width - 440
 
 // PRINT BUTTON
     Button
@@ -437,6 +482,7 @@ ApplicationWindow {
     {
        id:imProcButton
        visible: false
+       Layout.column:2
        style: ButtonStyle {
            label: Text {
                text: qsTr("Processing")
@@ -452,15 +498,149 @@ ApplicationWindow {
            }
        }
         onClicked: popup_filters.open()
+    }
+
+// SET COMMENT BUTTON
+            Button
+            {
+               id:setComm
+               Layout.column:3
+               visible: false
+               style: ButtonStyle {
+                   label: Text {
+                       text: qsTr("Set Comment")
+                       color: control.pressed ? "black" : "#696969"
+                       font.bold: true
+                   }
+                   background: Rectangle {
+                       implicitWidth: 100
+                       implicitHeight: 25
+                       color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                       border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                       border.width: 3
+                   }
+               }
+                onClicked: popup_Comment.open()
 
 
     }
 
+// SET TAG BUTTON
+            Button
+            {
+               id:setTag
+               Layout.column:4
+               visible: false
+               style: ButtonStyle {
+                   label: Text {
+                       text: qsTr("Set Tag")
+                       color: control.pressed ? "black" : "#696969"
+                       font.bold: true
+                   }
+                   background: Rectangle {
+                       implicitWidth: 100
+                       implicitHeight: 25
+                       color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                       border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                       border.width: 3
+                   }
+               }
+                onClicked: popup_Tags.open()
+
+    }
+    }
+
+// SET TAGS POPUP
+
+Popup {
+                id: popup_Tags
+                x:root.width/2
+                y:root.height/4
+                visible: false
+
+                ColumnLayout{
+
+                    spacing: 10
+                    anchors.centerIn: parent
 
 
+                TextField {
+                    id: tag
+                    placeholderText: qsTr("Tag")
+                    width: 450
+                    textColor: "#696969"
+                }
 
-}
+                Button {
+                    id:b1
+                    style: ButtonStyle {
+                        label: Text {
+                            text: qsTr("Enter")
+                            color: control.pressed ? "black" : "#696969"
+                            font.bold: true
+                        }
+                        background: Rectangle {
+                            implicitWidth: 100
+                            implicitHeight: 25
+                            color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                            border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                            border.width: 3
+                        }
+                    }
+                     onClicked: {
+                         dbModel.setTags(dbModel.getTransitIndex(), tag.text);
+                         popup_Tags.close()
+                                      }
+                       }
+                }
+            }
+
+// SET COMMENT POPUP
+            Popup {
+                id: popup_Comment
+                x:root.width/2
+                y:root.height/4
+                visible: false
+
+                ColumnLayout{
+
+                    spacing: 10
+                    anchors.centerIn: parent
+
+
+                TextField {
+                    id: comment
+                    placeholderText: qsTr("Comment")
+                    width: 450
+                    textColor: "#696969"
+                }
+
+                Button {
+                    id:b2
+                    style: ButtonStyle {
+                        label: Text {
+                            text: qsTr("Enter")
+                            color: control.pressed ? "black" : "#696969"
+                            font.bold: true
+                        }
+                        background: Rectangle {
+                            implicitWidth: 100
+                            implicitHeight: 25
+                            color: control.pressed ? "#D3D3D3" : (control.hovered ? "#F5F5F5" :"#FFFFFF")
+                            border.color: control.pressed ? "#696969" : (control.hovered ? "#C0C0C0" :"#DCDCDC")
+                            border.width: 3
+                        }
+                    }
+                     onClicked: {
+                         dbModel.setComment(dbModel.getTransitIndex(), comment.text);
+                         popup_Comment.close()
+                                      }
+                       }
+                }
+            }
+
 // PRINTING MESSAGE
+
     Popup {
         id: popup_print
         x:root.width/2
@@ -473,7 +653,6 @@ ApplicationWindow {
                 }
 
     }
-
 
 
 // IMAGE PROCESSING
@@ -491,7 +670,6 @@ ApplicationWindow {
                 }
         Button {
             id: rotate_button
-          //  text: qsTr("Rotate")
             style: ButtonStyle {
                 label: Text {
                     text: qsTr("Rotate")
@@ -513,7 +691,6 @@ ApplicationWindow {
         }
         Button {
             id: crop_button
-          //  text: qsTr("Crop")
             style: ButtonStyle {
                 label: Text {
                     text: qsTr("Crop")
@@ -535,7 +712,6 @@ ApplicationWindow {
         }
         Button {
             id: baw_button
-            //text: qsTr("Black and White")
             style: ButtonStyle {
                 label: Text {
                     text: qsTr("Black and White")
@@ -550,8 +726,8 @@ ApplicationWindow {
                     border.width: 3
                 }
             }
-            onClicked:  { im.source = dbModel.makeBlackAndWhiteImage(im.source.toString().slice(7),"/home/skt/NewImages/im_baw.jpg");
-
+            onClicked:  { im.source = dbModel.makeBlackAndWhiteImage(im.source.toString().slice(7),"/home/skt/im_baw.jpg");
+                dbModel.setTransitURL(im.source);
                 popup_filters.close();}
         }
 
@@ -600,7 +776,8 @@ ApplicationWindow {
                 }
             }
              onClicked: {
-                 im.source = dbModel.rotateImage(im.source.toString().slice(7),"/home/skt/NewImages/im_rotate.jpg", angle.text);
+                 im.source = dbModel.rotateImage(im.source.toString().slice(7),"/home/skt/im_rotate.jpg", angle.text);
+                 dbModel.setTransitURL(im.source);
                  popup_rotate.close()
                               }
                }
@@ -626,14 +803,14 @@ ApplicationWindow {
             textColor: "#696969"
         }
         TextField {
-            id: x2
-            placeholderText: qsTr("x2 = ")
+            id: y1
+            placeholderText: qsTr("y1 = ")
             width: 250
             textColor: "#696969"
         }
         TextField {
-            id: y1
-            placeholderText: qsTr("y1 = ")
+            id: x2
+            placeholderText: qsTr("x2 = ")
             width: 250
             textColor: "#696969"
         }
@@ -660,18 +837,15 @@ ApplicationWindow {
                 }
             }
              onClicked: {
-                 im.source = dbModel.cropImage(im.source.toString().slice(7),"/home/skt/NewImages/im_rotate.jpg",x1, y1, x2, y2);
 
-
+                 im.source = dbModel.cropImage(im.source.toString().slice(7),"/home/skt/im_crop.jpg",x1.text, y1.text, x2.text, y2.text);
+                 dbModel.setTransitURL(im.source);
                  popup_crop.close()
                               }
                }
 
         }
     }
-
-
-
 
 }
 

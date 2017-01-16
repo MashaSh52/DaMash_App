@@ -577,7 +577,6 @@ bool ImageProvider::printImage(QString pathToImage)
 {
     QPrinter printer;
     QPrintDialog* dlg = new QPrintDialog(&printer,0);
-
     if(dlg->exec() == QDialog::Accepted) {
         QImage img(pathToImage);
         QPainter painter(&printer);
@@ -642,6 +641,7 @@ bool ImageProvider::setComment(QModelIndex currentIndex, QString comment)
         queryForUpdate.prepare("UPDATE RELATIONSHIPS SET COMMENT = :COM WHERE ID = :ID");
         queryForUpdate.bindValue(":COM", comment);
         queryForUpdate.bindValue(":ID", data->id);
+        queryForUpdate.exec();
         HData* insData = (HData*)data->data;
         insData->comments = comment;
         return 0;
@@ -652,6 +652,7 @@ bool ImageProvider::setComment(QModelIndex currentIndex, QString comment)
         queryForUpdate.prepare("UPDATE IMAGES SET COMMENT = :COM WHERE ID = :ID");
         queryForUpdate.bindValue(":COM", comment);
         queryForUpdate.bindValue(":ID", data->id);
+        queryForUpdate.exec();
         IData* insData = (IData*)data->data;
         insData->comments = comment;
         return 0;
@@ -672,6 +673,7 @@ bool ImageProvider::setTags(QModelIndex currentIndex, QString tags)
         queryForUpdate.prepare("UPDATE IMAGES SET TAGS = :t WHERE ID = :ID");
         queryForUpdate.bindValue(":t", tags);
         queryForUpdate.bindValue(":ID", data->id);
+        queryForUpdate.exec();
         IData* insData = (IData*)data->data;
         insData->tags = tags.split(",");
         return 0;
